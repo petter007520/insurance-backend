@@ -1,0 +1,19 @@
+.kuang{background-color:#FFFFFF; border:1px solid #dedede; overflow:hidden; padding-bottom:25px}
+.step{ background:url(../images/login-step-43446822.png); width:759px; height:83px;MARGIN: 0px auto; margin-top:75px}
+.step2{ background:url(../images/login-step-43446822.png) 0px -83px; width:759px; height:83px;MARGIN: 0px auto; margin-top:75px}
+.step3{ background:url(../images/login-step-43446822.png) 0px -166px; width:759px; height:83px;MARGIN: 0px auto; margin-top:75px}
+.inputxt{ height:36px; border:1px solid #dedede; width:220px; line-height:36px}
+.txt{height:36px; border:1px solid #dedede; width:100px; line-height:36px}
+.need{ padding-top:5px}
+.yzmobile{ margin-left:45px; clear:both; padding-top:25px}
+.yzmobile dl{ display:block; width:100px; text-align:right; float:left; line-height:36px}
+.yzmobile span{ display:block; float:left}
+.yzmobile .yzm{ display:block; float:left; margin-left:5px}
+.yzmobile .err{ color:#FF0000; float:left; margin-left:5px; line-height:41px; font-size:14px; height:41px}
+#mobile{ line-height:36px}
+#d2{ border:1px solid #f1741f; width:140px; height:36px; line-height:36px; padding-left:10px}
+.ok{ background:url(../images/regisok-4e2ea433.png) left center no-repeat; padding-left:45px; height:32px; line-height:32px; font-size:15px; margin-left:415px; margin-top:55px}
+.oklogin{ padding-left:45px; height:32px; line-height:32px; font-size:15px; margin-left:415px; margin-top:55px}
+.ad{text-align:center; padding-top:35px }
+.l1{float:left; width:390px; display:inline; margin-left:88px; }
+.r1{float:right; margin-right:100px}

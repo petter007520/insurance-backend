@@ -1,0 +1,21 @@
+-- 清空理财表数据SQL语句
+
+TRUNCATE dg_member;
+TRUNCATE dg_member_cashback;
+TRUNCATE dg_member_deal;
+TRUNCATE dg_member_forgot_logs;
+TRUNCATE dg_member_licai_list;
+TRUNCATE dg_member_logs;
+TRUNCATE dg_member_msg;
+TRUNCATE dg_member_order;
+TRUNCATE dg_member_pay_log;
+TRUNCATE dg_member_send_mobile;
+TRUNCATE dg_member_touzi_list;
+TRUNCATE dg_moneylog;
+TRUNCATE dg_money_sql;
+TRUNCATE dg_project_buy;
+TRUNCATE dg_member_companypay;
+TRUNCATE dg_member_signmoney;
+
+INSERT INTO `dg_member` (`id`, `username`, `pwd`, `paypwd`, `mobile`, `email`, `logintime`, `lognum`, `state`, `inviter`, `ip`, `posttime`, `amount`, `realname`, `level`, `address`, `qq`, `question`, `answer`, `ismobile`, `card`, `isquestion`, `isbank`, `bankname`, `bankrealname`, `bankcode`, `bankaddress`, `is_dongjie`, `invicode`, `picImg`, `reg_from`, `onlinetime`) VALUES
+(1, 'dchqq', '123456', '123456', '18888888888', '', 1539744145, 29, 1, '513570', '127.0.0.1', 1533741778, '5111713.04', '董先生', 2, NULL, '123456', NULL, NULL, 1, NULL, 0, 1, '农业银行', '董先生', '65482258548754184425', '合肥支行', 0.00, 513567, NULL, 'www.josephvip.com/pc', 1539744161);

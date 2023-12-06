@@ -1,0 +1,14 @@
+
+.licaibox{max-width:1000px;width:100%;margin:auto;margin-top-:50px;margin-bottom-:50px;}
+.licaibox .hd{background:#f5f5f5;border:1px solid #eeeeee;width: 913px !important;    height: 45px;}
+.licaibox .hd ul li{float:left;color:#343434;border-right:1px solid #eeeeee;padding:10px 25px;font-size:17px;margin-bottom:-1px;cursor:pointer;}
+.licaibox .hd ul li.on{background:url(../images/tabbg.png) no-repeat top right #ffffff;}
+.licaibox .bd{border-top:0;    padding-: 7px 10px;clear: both;}
+.licaibox .bd table{}
+.licaibox .bd table th{background:#f2f2f2;color:#616161;font-size:17px;text-align:center;font-weight:normal;padding:5px;}
+.licaibox .bd table td{padding:15px 5px;color:#343434;font-size:19px;text-align:center;border-bottom:1px dashed #c2c2c2;}
+.licaibox .bd table td.td1 a{color:#343434;}
+.licaibox .bd table td.td1 a:hover{text-decoration:underline;}
+.licaibox .bd table td.td3{color:#ba0000;}
+.licaibox .bd table td.td6 a.jxbtn{background:#ba0000;color:#ffffff;padding:3px 10px;border-radius:5px;font-size:17px;}
+.licaibox .bd table td.td6 a.jsbtn{background:#959595;color:#ffffff;padding:3px 10px;border-radius:5px;font-size:17px;}

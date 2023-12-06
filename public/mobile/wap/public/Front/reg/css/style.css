@@ -1,0 +1,126 @@
+/* common css ============================================== */
+
+:focus{outline:none;}
+
+
+
+sup{vertical-align:text-top;}
+sub{vertical-align:text-bottom;}
+del{color:#686868;}
+table{border-collapse:collapse; border-spacing:0;}
+/* for font & text & tag =================================== */
+.red{
+	color:red!important;
+}
+.gray{
+	color:#686868!important;
+}
+.hasDefaultText{color:#999;}
+.orange{
+	color:#f60!important;
+}
+.green{
+	color:#79a605!important;
+}
+.blue{
+	color:#0057b0!important;
+}
+b{font-weight:normal; display:inline-block; margin:0 8px; color:#f27f02;}
+/* for margin & padding | width & height =================== */
+.mb10{
+	margin-bottom:10px;
+}
+.mb18{margin-bottom:18px;}
+.mb22{margin-bottom:22px;}
+.mt10{
+	margin-top:10px;
+}
+.mr20{
+	margin-right:20px;
+}
+.p10{padding:10px;}
+.tl { text-align: left}
+.tr { text-align: right}
+.tc { text-align: center}
+.ml10 {margin-left: 10px;}
+.mr10 {margin-right: 10px;}
+/* class css ============================ class css ======== */
+.fl{
+	float:left;
+	display:inline;
+}
+.fr{
+	float:right;
+	display:inline;
+}
+
+.lireset li {
+    background: url("../images/arrow1.gif") no-repeat left 8px;
+    margin-bottom: 4px;
+    padding-left: 15px;
+}
+.lireset2 li {
+    background: url("../images/arrow2.gif") no-repeat left 8px;
+    margin-bottom: 4px;
+    padding-left: 15px;
+}
+.download{
+	padding:6px 0 6px 70px;
+	line-height:26px;
+	height:64px;
+	font-size:16px;
+	font-family:"microsoft yahei";
+	background:url(../images/download.png) no-repeat;
+}
+.donate{
+	padding:15px 5px 6px 72px;
+	height:55px;
+	width:213px;
+	display:block;
+	color:#8b6300;
+	border:5px solid #F27F02;
+	background:url(../images/donate.png) 3px center no-repeat #fae4ae;
+}
+.donate:hover{
+	text-decoration:none;
+	background-color:#fff79f;
+}
+/*--find height for float elements --------------------------*/
+.cls:after{content:"";font-size:0;display:block;height:0;clear:both;visibility:hidden;}
+* html .cls{ zoom: 1; } /* IE6 */
+*:first-child+html .cls{ zoom: 1; } /* IE7 */
+
+
+/*==========以下部分是Validform必须的===========*/
+.Validform_checktip{
+	margin-left:8px;
+	line-height:20px;
+	height:20px;
+	overflow:hidden;
+	color:#999;
+	font-size:12px;
+}
+.Validform_right{
+	color:#71b83d;
+	padding-left:20px;
+	background:url(../images/right.png) no-repeat left center;
+}
+.Validform_wrong{
+	color:red;
+	padding-left:20px;
+	white-space:nowrap;
+	background:url(../images/error.png) no-repeat left center;
+}
+.Validform_loading{
+	padding-left:20px;
+	background:url(../images/onLoad.gif) no-repeat left center;
+}
+.Validform_error{
+	background-color:#ffe7e7;
+}
+#Validform_msg{color:#7d8289; font: 12px/1.5 tahoma, arial, \5b8b\4f53, sans-serif; width:280px; -webkit-box-shadow:2px 2px 3px #aaa; -moz-box-shadow:2px 2px 3px #aaa; background:#fff; position:absolute; top:0px; right:50px; z-index:99999; display:none;filter: progid:DXImageTransform.Microsoft.Shadow(Strength=3, Direction=135, Color='#999999');}
+#Validform_msg .iframe{position:absolute; left:0px; top:-1px; z-index:-1;}
+#Validform_msg .Validform_title{line-height:25px; height:25px; text-align:left; font-weight:bold; padding:0 8px; color:#fff; position:relative; background-color:#000;}
+#Validform_msg a.Validform_close:link,#Validform_msg a.Validform_close:visited{line-height:22px; position:absolute; right:8px; top:0px; color:#fff; text-decoration:none;}
+#Validform_msg a.Validform_close:hover{color:#cc0;}
+#Validform_msg .Validform_info{padding:8px;border:1px solid #000; border-top:none; text-align:left;}

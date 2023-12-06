@@ -1,0 +1,18 @@
+2023-08-11 18:32:09记录订单发起
+2023-08-11 18:32:09array (
+  'notifyUrl' => 'http://www.adaqqqqq.com/api/online_pay_not/zfb',
+  'orderAmt' => 100000.0,
+  'orderNo' => 'JY20230811183209SWQ1FGEJ',
+  'productCode' => '3006T',
+  'rate' => 0.1,
+  'requestTimestamp' => 1691749929000,
+  'openId' => 30247,
+)
+2023-08-11 18:32:09'{"notifyUrl":"http:\\/\\/www.adaqqqqq.com\\/api\\/online_pay_not\\/zfb","orderAmt":100000,"orderNo":"JY20230811183209SWQ1FGEJ","productCode":"3006T","rate":0.1,"requestTimestamp":1691749929000,"openId":30247}'
+2023-08-11 18:32:09'http://123.57.214.77:9000/union/consume/doYun'
+2023-08-11 18:32:09array (
+  'code' => 1,
+  'message' => '不存在该绑卡Id',
+  'responseTimestamp' => 1691749929579,
+  'responseDateTime' => '2023-08-11 18:32',
+)

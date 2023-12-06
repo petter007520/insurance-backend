@@ -1,0 +1,15 @@
+/*媒体报道焦点图*/
+/*焦点图*/
+.mediaReport {
+    margin-top: 25px;    height: 280px;clear:both;
+}
+.mediaReport{margin-top:25px;}
+.mediaReport h1{ font-size:18px; color:#333; margin-bottom:15px;font-weight:normal}
+.mediaReport h1 a{float:right; color:#666; font-size:14px;font-weight:normal}
+.focus{ position:relative; width:450px; height:243px; background-color: #000; float: left;}  
+
+.mediaReport .right{width:710px; float:right; background:#fff; padding:0 20px 0 20px; }
+.mediaReport .right ul li{font-size:12px; color:#666; padding:13px 0; border-bottom:1px dashed #ccc;}
+.mediaReport .right ul li a{font-size:16px; color:#333;}
+.mediaReport .right ul li span{float:right; margin-right:30px;}
+.mediaReport .right ul li em{float:right;}

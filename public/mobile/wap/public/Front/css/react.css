@@ -1,0 +1,601 @@
+.register {
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden
+}
+.register form>ul {
+    padding: 0
+}
+.register form>ul li {
+    list-style: none
+}
+.register .error-default {
+    color: #ddd;
+    margin: 0 0 0 5px
+}
+.register .register-header ul {
+    text-align: center;
+    height: 40px;
+    width: 800px;
+    margin: 75px auto
+}
+.register .register-header ul li {
+    display: inline;
+    float: left;
+    width: 170px;
+    padding: 5px 15px;
+    margin: 0 0 0 80px;
+    border: 1px solid #d4d4d3;
+    border-radius: 15px 15px 15px 15px;
+    background: #d4d4d3
+}
+.register .register-header ul li .circle {
+    height: 27px;
+    width: 27px;
+    display: inline-block;
+    color: #d4d4d3;
+    font-weight: 700;
+    background: url(//img4.soft.com/public/dist/20151016143715/img/register/circle-f13583f1.png) no-repeat
+}
+.register .register-header ul li span {
+    color: #fff;
+    font-weight: 700
+}
+.register .register-header ul .active {
+    background: #efac2b
+}
+.register .register-header ul .active .circle {
+    color: #efac2b
+}
+.register .register-body {
+    width: 650px;
+    margin: 40px 0 0 -63px;
+    position:relative;
+}
+.register .register-body ul li {
+    width: 100%;
+    margin: 12px 0 0
+}
+.register .register-body ul .special{
+  height:10px;
+  margin:0px;
+  padding-left:95px;
+}
+.register .register-body .bonus{
+  position:absolute;
+  right:-168px;
+  top:0px;
+  height: 325px;
+  width: 360px;
+  background: url(//img3.soft.com/public/dist/20151016143715/img/register/bonus_register-95f9fb0d.jpg) no-repeat;
+}
+.register .register-body ul li label {
+    width: 100px;
+    line-height: 35px;
+    text-align: right
+}
+.register .register-body ul li input[type=text],
+.register .register-body ul li input[type=password] {
+    width: 220px;
+    height: 40px;
+    line-height: 35px;
+    text-indent: 10px
+}
+.register .register-body ul li input[type=text]:focus,
+.register .register-body ul li input[type=password]:focus {
+    border: 2px solid #f13131
+}
+.register .register-body ul li .login-link {
+    margin: 0 210px 0 0
+}
+.register .register-body ul li input[type="button"] {
+    width: 200px;
+    font-size: 18px
+}
+.register .register-body ul li .auth-code {
+    color: silver
+}
+.register .register-body ul li .auth-code a {
+    color: inherit;
+    text-decoration: none
+}
+.register .register-body ul li .auth-code a img {
+    vertical-align: middle;
+    height: 35px
+}
+.register .register-body ul li .error-tip {
+    margin: 0 0 0 5px;
+    color: red;
+}
+.register .register-body ul li span a {
+    color: #008ae6
+}
+.register .register-body ul li .btn-xs {
+    margin: 0 0 0 5px
+}
+.register .register-body ul .submit-btn {
+    margin: 30px 0 0 100px
+}
+.register .register-body ul .privacy {
+    margin: 30px 0 0 90px;
+    font-size: 12px
+}
+.register .register-body ul .privacy a {
+    color: #3b99e8
+}
+.register .register-body .done {
+    margin: 90px 0 0 240px;
+    width: 420px;
+    text-align: center
+}
+.register .register-body .hongbao{
+    width:798px;
+    margin:30px 0 0 49px;
+}
+.register .register-body .done img {
+    vertical-align: middle
+}
+.register .register-body .done span {
+    color: #5e5e5e;
+    font-size: 18px
+}
+.register .register-body .open {
+    width: 420px;
+    margin: 100px 0 0 234px;
+    text-align: center
+}
+.register .register-body .open span a {
+    color: #b9b9b9;
+    margin: 0 0 0 10px
+}
+.register .sms-btn {
+    padding: 0 90px 10px 100px
+}
+.register .referral {
+    display: none
+}
+body {
+    background-color: #FFF;
+	margin:auto;
+}
+#topnav-spacer {
+    overflow: hidden;
+    height: 40px
+}
+.topnav {
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    width: 100%;
+    height: 40px;
+    background-color: #333
+}
+.topnav,
+.topnav a {
+    color: #fff
+}
+.topnav .container {
+    line-height: 40px
+}
+.topnav .cc-icontext-home {
+    padding-right: 8px;
+    margin-right: 6px;
+    border-right: 1px dotted #CCC
+}
+.bank_tel{
+    height:30px;
+    line-height:30px;
+    width:734px;
+    text-align:right;
+}
+.rechargeDisc{
+  padding-left:0px;
+}
+.qq,
+.weibo,
+wechat {
+    display: inline-block;
+    width: 40px;
+    background-image: url(http://www.apengdai.com/imgs/index/title_bg.png)
+}
+.cc-button:hover {
+    text-decoration: none
+}
+.cc-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    border-radius: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    text-decoration: none;
+    background: #4A90E2;
+    border: 1px solid #4F82DA;
+    -moz-box-shadow: 0 1px 2px 0 #B2B2B2;
+    box-shadow: 0 1px 2px 0 #B2B2B2;
+    font-family: HiraginoSansGB-W6;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 24px
+}
+.account-nav {
+    width: 100%;
+    height: 60px
+}
+.account-nav .media-heading {
+    font-size: 18px;
+    color: #666;
+    line-height: 23px;
+    text-indent: 5px
+}
+.account-nav ul {
+    overflow: hidden
+}
+.account-nav ul li {
+    display: inline;
+    float: left;
+    margin: 0 0 0 5px
+}
+.account-info {
+    width: 100%;
+    height: 80px;
+    overflow: hidden
+}
+.account-info ul {
+    overflow: hidden;
+    margin: 15px 0 0
+}
+.account-info ul li {
+    display: inline;
+    float: left;
+    margin: 0 0 0 20px
+}
+.account-info ul li h4 {
+    color: #AEAEAE;
+    line-height: 18px
+}
+.account-info ul li img {
+    vertical-align: top;
+    margin: 0 0 0 5px
+}
+.account-info ul li p {
+    font-size: 28px;
+    color: #666;
+    line-height: 36px
+}
+.account-info .btn-group-vertical {
+    margin: -5px 0 0 60px
+}
+.account-info .btn-group-vertical .btn {
+    border-radius: 2px;
+    font-size: 16px;
+    line-height: 24px;
+    margin: 5px 0 0;
+    height: 37px;
+    width: 72px
+}
+.account-info .btn-group-vertical .btn-primary {
+    background: #4A90E2;
+    border: 1px solid #4F82DA;
+    -moz-box-shadow: 0 1px 2px 0 #B2B2B2;
+    box-shadow: 0 1px 2px 0 #B2B2B2;
+    color: #fff
+}
+.account-info .btn-group-vertical .btn-default {
+    background: #fff;
+    border: 1px solid #D9D9D9;
+    -moz-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
+    color: #B4B4B5
+}
+.bindcard-form {
+    margin-bottom: 20px;
+    height: 174px
+}
+.bindcard-form .form-group {
+    width: 100%
+}
+.ccc-recharge h2 {
+    font-size: 18px
+}
+.ccc-recharge #rechargeValue {
+    display: inline-block
+}
+.ccc-recharge .recharge-wp {
+    position: relative;
+    padding-bottom: 30px
+}
+.ccc-recharge .recharge-wp-recharge{
+    padding-bottom: 0px;
+    margin-bottom:0px;
+    height:110px;
+}
+.ccc-recharge .error-hint {
+    color: red;
+    margin-left: 1em;
+}
+.ccc-recharge .error-wp {
+    position: absolute;
+    top: 100px
+}
+.ccc-recharge .error-wp .error-hint {
+    margin-left: 0
+}
+.ccc-recharge .form-control {
+    padding: 12px;
+    height: auto;
+    margin: 10px 0;
+    width: 190px
+}
+.ccc-recharge .youqing_title {
+    position: relative;
+    top: -43px;
+    left: 192px;
+    width: 660px
+}
+.ccc-recharge .recharge-way{
+    margin-bottom:30px;
+}
+.ccc-recharge .recharge-way div{
+    width:160px;
+    height:42px;
+    display: inline-block;
+    line-height:42px;
+    text-align:center;
+    cursor: pointer;
+    margin-right:30px;
+    color:#5d5d5d;
+    background: url(//img2.soft.com/public/dist/20151016143715/img/bank_unselected-483c5bca.jpg) no-repeat 0px 0px;
+}
+.ccc-recharge .recharge-way div.kuaijie{
+    background: url(//img2.soft.com/public/dist/20151016143715/img/bank_unselected-483c5bca.jpg) no-repeat 0px 0px;
+    padding-left:6px;
+    text-align: left;
+}
+.ccc-recharge .recharge-way div.kuaijie img{
+    width:44px;
+    height:25px;
+    display:inline-block;
+}
+.ccc-recharge .recharge-way div.active{
+    background: url(//img4.soft.com/public/dist/20151016143715/img/bank_selected-92806c6e.jpg) no-repeat 0px 0px;
+    color:#f17420;
+}
+.ccc-recharge .youqing_title .gap_youqing {
+    padding-left: 70px
+}
+.ccc-recharge .form-group .control-label {
+    padding: 10px 0 5px
+}
+.ccc-recharge .bank {
+    cursor: pointer;
+    border: 1px solid #d5d5d5;
+    padding: 2px;
+    margin: 0 30px 10px 0;
+    display: inline-block
+}
+.ccc-recharge .bank .bank-img{
+    width: 154px;
+    height: 44px;
+}
+.ccc-recharge .form-group .mb13{
+    padding:10px 0 18px;
+}
+.ccc-recharge .bank .bank-img{
+    background: url(//img2.soft.com/public/dist/20151016143715/img/banks-recharge-c6a4e43c.png) no-repeat 10px -3px
+}
+.ccc-recharge .bank{
+    width: 160px;
+    height: 50px;
+    overflow:hidden;
+}
+.ccc-recharge .bank:hover {
+    border: 3px solid #f17420;
+    padding: 0
+}
+.ccc-recharge .bank.active {
+    border:none;
+    background: url(//img0.soft.com/public/dist/20151016143715/img/bank_selected3-62bb7617.jpg) no-repeat 0px 0px;
+    padding: 1px;
+}
+.ccc-recharge .bank_collections .top div{
+    height:34px;
+    float:left;
+    line-height:34px;
+    text-align:center;
+    background:#e6e6e6;
+    border:1px solid #fff;
+}
+.ccc-recharge .bank_collections .center .leftBox,.ccc-recharge .bank_collections .center .rightBox{
+   float:left;
+}
+.ccc-recharge .kuaijie_bg{
+  width:253px;
+  height:112px;
+  background: url(//img0.soft.com/public/dist/20151016143715/img/bank_bg-ae5b3193.jpg) no-repeat 0px 0px;
+}
+.ccc-recharge .kuaijie_bg .bank_title{
+  height:40px;
+  border-bottom:1px solid #d5d5d5;
+  overflow:hidden;
+  padding:11px 0px 0px 0px;
+  font-weight:bold;
+  text-align: center;
+}
+.ccc-recharge .kuaijie_bg .bank_title img{
+  width:140px;
+  height:22px;
+  margin:0px;
+}
+.ccc-recharge .kuaijie_bg .bank_center1{
+  height:42px;
+  line-height:42px;
+  color:#666;
+  text-align:center;
+  font-size:16px;
+}
+.bank_center2 .userName{
+  padding: 0 30px 0 30px;
+}
+.ccc-recharge .bank_recharge_tips{
+  color:#919191;
+  height:30px;
+  line-height:30px;
+}
+.ccc-recharge .kuaijie_bg .bank_center2{
+  height:16px;
+  line-height:16px;
+  color:#a8a8a8;
+  font-size:12px;
+}
+.ccc-recharge .bank_collections .center .leftBox{
+  width:140px;
+  border:1px solid #fff;
+  background:#f5f5f5;
+}
+.ccc-recharge .bank_collections .center .rightBox{
+  width:600px;
+}
+.ccc-recharge .bank_collections .center .rightBox .top div{
+  background:#f5f5f5;
+}
+.ccc-recharge .bank_collections .center .rightBox .top .m1{
+  width:264px;
+  overflow:hidden;
+}
+.ccc-recharge .bank_collections .center .rightBox .top .m2{
+  width:164px;
+  overflow:hidden;
+}
+.ccc-recharge .bank_collections .center .rightBox .top .m3{
+  width:164px; 
+  overflow:hidden;
+}
+.ccc-recharge .submit-btn .controls,
+.ccc-recharge .submit-btn button {
+    display: inline-block
+}
+.forgot-password {
+    max-width: 450px;
+	min-width:320px;
+    background: #f3f3f3;
+    margin: 0 auto;
+    overflow: hidden
+}
+.forgot-password .forgot-password-header {
+    text-align: center
+}
+.forgot-password .forgot-password-header ul {
+    text-align: center;
+    height: 40px;
+    min-width: 300px;
+    max-width:450px;
+	margin: 75px auto
+}
+.forgot-password .forgot-password-header ul li {
+    display: inline;
+    float: left;
+    width: 170px;
+    padding: 5px 15px;
+    margin: 0 0 0 65px;
+    border: 1px solid #d4d4d3;
+    border-radius: 15px 15px 15px 15px;
+    background: #d4d4d3
+}
+.forgot-password .forgot-password-header ul li .circle {
+    height: 27px;
+    width: 27px;
+    display: inline-block;
+    color: #d4d4d3;
+    font-weight: 700;
+    background: url(//img4.soft.com/public/dist/20151016143715/img/register/circle-f13583f1.png) no-repeat
+}
+.forgot-password .forgot-password-header ul li span {
+    color: #fff;
+    font-weight: 700
+}
+.forgot-password .forgot-password-header ul .active {
+    background: #efac2b
+}
+.forgot-password .forgot-password-header ul .active .circle {
+    color: #efac2b
+}
+.forgot-password .forgot-password-body {
+    max-width: 450px;
+	min-width:320px;
+    margin: 0 auto;
+    text-align: center;
+    background: #fff;
+    padding-top: 25px;
+    padding-bottom: 50px
+}
+.forgot-password .forgot-password-body h2 {
+    line-height: 74px
+}
+.forgot-password .forgot-password-body h2.resetpass {
+    background: url("//img3.soft.com/public/dist/20151016143715/img/smile-5e3600c9.png") center 0 no-repeat;
+    padding-top: 80px
+}
+.forgot-password .forgot-password-body form {
+    width: 600px;
+    margin: 0 auto
+}
+.forgot-password .forgot-password-body .done {
+    margin: 135px auto
+}
+.forgot-password .forgot-password-body .done span {
+    color: #b9b9b9;
+    font-size: 18px;
+    margin: 0 0 0 20px
+}
+.forgot-password .forgot-password-body .done img {
+    vertical-align: middle
+}
+.container-wrap{
+	clear:both;
+	       border--: 6px solid #d1e1f1;
+}
+
+.forgot-password .forgot-password-body ul li {
+    width: 100%;
+    margin: 20px 0 0;
+    clear: both
+}
+.forgot-password .forgot-password-body ul li label {
+    width: 100px;
+    text-align: right;
+    padding-right: 20px
+}
+.forgot-password .forgot-password-body ul li input {
+    width: 275px;
+    height: 40px;
+	    border: 1px solid #e2e2e2;
+    line-height: 40px\9
+}
+.forgot-password .forgot-password-body ul li input.borderchange:focus {
+    border: 2px solid #f13131;
+    text-indent: 10px
+}
+.forgot-password .forgot-password-body ul li .forgetPassWordBtn {
+    line-height: 20px\9
+}
+.forgot-password .forgot-password-body ul li .btn-xs {
+    margin: 0 0 0 5px
+}
+.forgot-password .forgot-password-body ul li .login-link {
+    margin: 0 210px 0 0
+}
+.forgot-password .forgot-password-body ul li input[type="submit"] {
+    width: 200px;
+    font-size: 18px;
+    margin: 40px 0 20px
+}
+.forgot-password .forgot-password-body ul li .error-tip {
+    margin: 0 0 0 5px;
+    color: red
+}
+.forgot-password .forgot-password-body ul li .auth-code a {
+    color: inherit;
+    text-decoration: none
+}

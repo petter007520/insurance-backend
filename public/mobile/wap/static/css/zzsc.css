@@ -1,0 +1,96 @@
+* {
+	padding: 0;
+	margin: 0;
+	border: none;
+}
+ul, ol, li {
+	list-style: none;
+}
+em, i {
+	font-style: normal;
+}
+a {
+	text-decoration: none;
+	color: #333;
+}
+img {
+	display: inline-block;
+	border: 0 none;
+	
+}
+body {
+	color: #333;
+	font-family: 'Microsoft YaHei', Verdana, Arial, Helvetica, sans-serif;
+	line-height: 20px;
+	overflow-x: hidden;
+	min-width:320px;
+	max-width: 450px;
+	font-size--: 14px;
+	margin:0px auto;
+	background: #eee
+}
+.clear:after {
+	content: '\20';
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+/*固定的悬浮窗*/
+.yb_conct {
+	position: fixed;
+	z-index: 9999999;
+	bottom: 0px;
+	right--: -260px;
+	cursor: pointer;
+	transition: all .3s ease;
+	width:100%;
+	max-width: 450px;
+	background:#fff;
+	height-:55px;
+	padding: 10px 0px 0px;
+	
+}
+.yb_bar ul li {
+	width: 33%;
+	width: 20%;
+	height: 43px;
+	font: 16px/53px 'Microsoft YaHei';
+	color: #fff;
+	text-align: center;
+	margin-bottom---: 3px;
+	border-radius--: 3px;
+	transition: all .5s ease;
+	overflow: hidden;
+	float:left;
+}
+.yb_bar .yb_top {
+	background: #f9f9f9 url(../images/fixcont.png) no-repeat 10px 0;
+}
+.yb_bar .yb_phone {
+	background: #f9f9f9 url(../images/fixcont.png) no-repeat 10px -57px;
+}
+.yb_bar .yb_QQ {
+	text-indent: 0;
+	background: #f9f9f9 url(../images/fixcont.png) no-repeat 10px -113px;
+}
+.yb_bar .yb_ercode {
+	/*height:200px;*/
+
+	
+}
+.yb_bar .yb_ercode img{display:none}
+.yb_bar .yb_ercode:hover  img{display:block;position:fixed;bottom:54px;width:100%;}
+.hd_qr {
+	padding: 0 29px 25px 29px;
+}
+.yb_QQ a {
+	display: block;
+	text-indent: 54px;
+	width: 100%;
+	height: 100%;
+	color: #fff;
+}
+.service-container.clearfix.josephcs {
+	background: #fff;
+}

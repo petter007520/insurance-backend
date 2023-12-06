@@ -1,0 +1,814 @@
+/**
+ ** nqawap - the wap-project of nianqa
+ ** @author The FEE Group of nianqa
+ ** @version v1.0.0
+ **/
+@charset "UTF-8";
+
+.bounceInDown, .bounceInLeft, .bounceInRight, .bounceInUp, .fadeIn, .fadeInDown, .fadeInLeft, .fadeInRight, .flipInY, .lightSpeedIn, .rollIn {
+    -o-animation-duration: 1s;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -o-animation-fill-mode: both;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both
+}
+
+.bar-footer-buttons .footer-button, .change3038, .icon-dynamic, .icon-glory-dynamic, .icon-glory-mobile, .icon-glory-pwd, .icon-glory-verify, .icon-mobile, .icon-pwd, .icon-verify, .inline, .invite .invite-rank, .isSee1, .isSee10, .isSee11, .isSee2, .isSee3, .isSee4, .isSee5, .isSee6, .isSee7, .isSee8, .isSee9, .laborDay-bottom, .laborday-d, .laborday-pic, .list-from-trj .ellipsis-css, .loading-container .icon, .loading-container2 .icon, .m-kingglory-form .m-dynamic-content .m-input-sub, .m-kingglory-form .m-dynamic-content .m-input-sub input, .m-kingglory-form .m-dynamic-content .m-input-sub label, .m-kingglory-form .m-dynamic-content .m-input-sub-btn, .m-kingglory-form .m-input-row input, .m-kingglory-form .m-input-row label, .m-kingglory-form .m-input-row span.auth-code a, .m-kingglory-form .m-input-row span.auth-code a span.mask, .m-rebate-form .m-dynamic-content .m-input-sub, .m-rebate-form .m-dynamic-content .m-input-sub input, .m-rebate-form .m-dynamic-content .m-input-sub label, .m-rebate-form .m-dynamic-content .m-input-sub-btn, .m-rebate-form .m-input-row input, .m-rebate-form .m-input-row label, .m-rebate-form .m-input-row span.auth-code a, .mayday-goft, .movie-code, .movie-password, .movie-tel, .movie-vcode, .movie-yzm, .movieticketsbtn, .nqa-mains .nqa-btn, .nqa-mains .registerbtn, .nqa-mains .registerbtn1 {
+    display: inline-block
+}
+
+.center-block {
+    margin-left: auto;
+    margin-right: auto
+}
+
+.mayDay-other-prize-show ul li, .sub-menu-box .sub-menu-list li, .usericon .pic, .userinfo .details .details_l, .userinfo .details .details_r {
+    float: left
+}
+
+.about-wrap .page.introduce .about-menu:after, .about-wrap .page.introduce .about-menu:before, .clearfix:after, .clearfix:before, .coupon-fullcut-item .coupon-box:after, .coupon-fullcut-item .coupon-box:before, .graphic-list:after, .graphic-list:before, .lucky-money-item .coupon-box:after, .lucky-money-item .coupon-box:before, .redcoupon-fullcut-item .redcoupon-box:after, .redcoupon-fullcut-item .redcoupon-box:before, .redlucky-money-item .redcoupon-box:after, .redlucky-money-item .redcoupon-box:before {
+    content: "";
+    display: table
+}
+
+.about-wrap .page.introduce .about-menu:after, .clearfix:after, .coupon-fullcut-item .coupon-box:after, .graphic-list:after, .lucky-money-item .coupon-box:after, .redcoupon-fullcut-item .redcoupon-box:after, .redlucky-money-item .redcoupon-box:after {
+    clear: both
+}
+
+.bar .title, .list-from-trj .ellipsis-css {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.message-menu ul, .project-mod .graphic-list, .project-mod .hide.graphic-list, .project-mod .project-list, .project-mod .project-list.hide {
+    -o-transition: all .3s ease;
+    -webkit-transition: all .3s ease;
+    transition: all .3s ease
+}
+
+.m-select-roller {
+    z-index: 1001
+}
+
+.font12, .sub-menu-box .sub-menu-list li {
+    font-size: .511rem
+}
+
+.act-rule-txt, .bar.bar-blue-dark .button, .font14, .getred-user-info, .thinksg-prize-form li span, .thinksg-prize-form li span input, .thinksg-prize-point, .thinksgact-content {
+    font-size: .596rem
+}
+
+.act-rule-title, .actred-get-przie .get-title, .font16, .login-titles, .suc-text-info, .thinksgact-text {
+    font-size: .681rem
+}
+
+.bar-footer-buttons .footer-button, .bar.bar-blue-dark .title, .button.button-orange-light, .button.button-orange-light.activated, .font18, .prize-buttons, .step-buttons a, .thinksgact-txt-title {
+    font-size: .766rem
+}
+
+.font20 {
+    font-size: .851rem
+}
+
+.font22 {
+    font-size: .936rem
+}
+
+.font24, .footer-point-txt, footer.regiser-sem-info {
+    font-size: 1.021rem
+}
+
+.font26 {
+    font-size: 1.106rem
+}
+
+.font28 {
+    font-size: 1.191rem
+}
+
+.button.button-orange-light, .button.button-orange-light.activated, .cashOut-Mount, .coupon-fullcut-item .coupon-box .coupon-name, .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use, .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use .investment-progress .profit .extra, .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use em, .coupon-fullcut-item .coupon-box .coupon-sum, .coupon-fullcut-summary, .f_info .tjm, .f_info p, .f_info p.friends, .font30, .investment-progress .profit .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use .extra, .investment-progress .profit .lucky-money-item .coupon-box .coupon-name .coupon-go-use .extra, .investment-progress .profit .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use .extra, .investment-progress .profit .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use .extra, .item-radio .item-content, .lucky-money-item .coupon-box .coupon-name, .lucky-money-item .coupon-box .coupon-name .coupon-go-use, .lucky-money-item .coupon-box .coupon-name .coupon-go-use .investment-progress .profit .extra, .lucky-money-item .coupon-box .coupon-name .coupon-go-use em, .lucky-money-item .coupon-box .coupon-sum, .lucky-money-summary, .mask-Pop .button.button-small, .prize-mess-txt, .redcoupon-fullcut-item .redcoupon-box .coupon-name, .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use, .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use .investment-progress .profit .extra, .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use em, .redcoupon-fullcut-item .redcoupon-box .coupon-sum, .redlucky-money-item .redcoupon-box .coupon-name, .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use, .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use .investment-progress .profit .extra, .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use em, .redlucky-money-item .redcoupon-box .coupon-sum, .thinksg-poptxt, .trj-cash-list-txt, .trj-items-list .input-label, .trj-items-list .trj-items-content, .trj-items-list .trj-items-content input[type=text], .trj-pay-pwd-pop-content li, .trj-pay-pwd-pop-name, .trj-pwd-mobile, .trj-user-safe, .usericon_r h1 {
+    font-size: 1.277rem
+}
+
+.alipay .intpass, .mayDay-ul li textarea, .reg_yz, .setuplist, .setuplist li, .sub-menu-box .sub-menu-list, .usericon_r, .userinfo .details, .userlist {
+    overflow: hidden
+}
+
+.phoneget-content {
+    max-width: 640px;
+    margin: auto
+}
+
+.icon-reg-code, .icon-reg-dongtai, .img-star, .mayDay-show-red span, .mayDay-table td, .safe, .safe img, .safe span, .setuplist li a span.iconfont, .trj-bank-cash-login, .trj-servie-mobble img, .usericon_r h1, .usericon_r h1 a, .usericon_r h2, .userlist li .p-iconfont, .vam {
+    vertical-align: middle
+}
+
+.bar-footer-buttons .footer-button, .box-positive .dynamic-code, .sub-menu-box .sub-menu-list li {
+    text-align: center
+}
+
+.actred-name, .actred-show-red li, .alipay, .box-positive, .coupon-fullcut-item, .coupon-fullcut-item .coupon-box, .coupon-fullcut-item .coupon-box .coupon-name, .login_send, .login_send .login_yz, .lucky-money-item, .lucky-money-item .coupon-box, .lucky-money-item .coupon-box .coupon-name, .m-kingglory-form, .m-kingglory-form .m-dynamic-content, .m-kingglory-form .m-input-row, .m-kingglory-rule, .m-rebate-form .m-input-row, .mask-Pop .payinput, .mayDay-prize-box, .mayDay-rule-box, .mayDay-ul li, .message-list ul li, .message-list ul li .message-tit, .payCode .banks-div, .payCode .labelLD, .payCode label, .pays, .phoneget-act-info span, .phoneget-succ, .redcoupon-fullcut-item, .redcoupon-fullcut-item .redcoupon-box, .redcoupon-fullcut-item .redcoupon-box .coupon-name, .redlucky-money-item, .redlucky-money-item .redcoupon-box, .redlucky-money-item .redcoupon-box .coupon-name, .reg-content .protocol, .reg-content .reg, .reg-content .reg_yz, .reg-content .reg_yz .yz_l, .reg_yz, .reg_yz .yz_l, .relative, .step-buttons a, .suc-pop-text, .tabs.myreward-tabs i, .thinksg-show-btn, .thinksgact-title span, .thinksgactbox-txt, .trj-cash-brank-list dd, .trj-cash-brank-list dt, .trj-items-list .trj-items-content, .usericon, .usericon .setuplist .iconfont, .userlist li .span2, footer.regiser-sem-info {
+    position: relative
+}
+
+.absolute, .actred-show-red li .show-only-time, .actred-text-info, .alipay .shurus, .bar.bar-blue-dark .button.ion-android-more, .box-positive .dynamic-code, .box-positive .item .position3630-3, .box-positive .item .position3630-31, .box-positive .verify-img, .btn-login-back, .btn-prize-button, .cashhide, .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use, .coupon-fullcut-item .coupon-em, .coupon-fullcut-item .coupon-em:after, .coupon-fullcut-item .coupon-em:before, .footer-point, .footer-txt, .icon-reg-code, .icon-reg-dongtai, .investment-progress .profit .step-buttons a .extra, .login-show-pwd, .login-tel-update, .login-titles, .lucky-money-item .coupon-box .coupon-name .coupon-go-use, .lucky-money-item .coupon-em, .lucky-money-item .coupon-em:after, .lucky-money-item .coupon-em:before, .m-kingglory-form .m-dynamic-content .m-input-sub-btn, .m-kingglory-form .m-input-row .verify_pic, .m-kingglory-form .m-input-row span.auth-code, .m-rebate-form .m-input-row .verify_pic, .m-rebate-form .m-input-row span.auth-code, .mask-box, .mayDay-closed, .mayDay-rule-box:after, .mayDay-ul li .span-name, .mayDay-ul li.li-last:after, .message-list ul li .message-time, .payCode .banks-div .span-name, .payCode .banks-div span.payjt, .payCode .labelLD .span-name, .payCode .labelLD span.payjt, .payCode label .span-name, .payCode label span.payjt, .pays .lianDongCode, .phoneget-succ .phoneget-button, .pop-hide-error, .redbag-pop-share, .redbag-suc-button, .redcoupon-fullcut-item .coupon-em, .redcoupon-fullcut-item .coupon-em:after, .redcoupon-fullcut-item .coupon-em:before, .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use, .redlucky-money-item .coupon-em, .redlucky-money-item .coupon-em:after, .redlucky-money-item .coupon-em:before, .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use, .reg_yz span.icns, .step-buttons, .step-buttons a .investment-progress .profit .extra, .step-buttons a em, .sub-menu-box, .suc-text-info, .thinksgact-text, .thinksgact-txt-title, .trj-account-user-img, .trj-account-user-img2, .trj-account-user-img3, .trj-cash-brank-closed, .trj-cash-brank-list dd .icn-cash-select-yes, .trj-cash-select-brank, .trj-emafter, .trj-items-list .trj-items-content .trj-em-go, .trj-password-closde, .trj-xilan, .userlist li .trj-p-r, .userlist li i {
+    position: absolute
+}
+
+.btn-prize-invest, .btn-prize-invest.mother-btn, .button-common-btn, .coupon-fullcut-item .coupon-box .coupon-name .coupon-go-use, .coupon-fullcut-item .coupon-em, .coupon-fullcut-item .coupon-em:after, .coupon-fullcut-item .coupon-em:before, .icn-reg-bao, .icn-reg-bao2, .icn-reg-bao3, .icn-reg-bao4, .icon-reg-code, .icon-reg-dongtai, .investment-progress .profit .mayDay-other-prize-show ul li span.span1 .extra, .lucky-money-item .coupon-box .coupon-name .coupon-go-use, .lucky-money-item .coupon-em, .lucky-money-item .coupon-em:after, .lucky-money-item .coupon-em:before, .mayDay-closed, .mayDay-other-prize-show ul li span.span1 .investment-progress .profit .extra, .mayDay-other-prize-show ul li span.span1 em, .mayDay-show-red, .mayDay-show-red span, .phoneget-act-info span, .redcoupon-fullcut-item .coupon-em, .redcoupon-fullcut-item .coupon-em:after, .redcoupon-fullcut-item .coupon-em:before, .redcoupon-fullcut-item .redcoupon-box .coupon-name .coupon-go-use, .redlucky-money-item .coupon-em, .redlucky-money-item .coupon-em:after, .redlucky-money-item .coupon-em:before, .redlucky-money-item .redcoupon-box .coupon-name .coupon-go-use, .tabs.myreward-tabs .tab-item a, .trj-cash-brank-list dd .icn-cash-select-yes, .trj-detais_l-num, .trj-emafter, .trj-password-closde, .trj-red-point, .userinfo .balaner .trj-balaner-txt, .userlist li .p-iconfont, .userlist li .trj-p-name {
+    display: inline-block
+}
+
+.btn-login-back, .button-common-btn, .cashInOver-button .button-common-btn, .casherror .btn_error, .casherror .icoerror, .company-youshi li, .coupon-fullcut-item .coupon-box .coupon-sum, .f_info, .footer-point-txt, .footer-txt, .login-show-pwd, .login-titles, .lucky-money-item .coupon-box .coupon-sum, .m-kingglory-form .m-dynamic-content .m-input-sub label, .m-kingglory-form .m-dynamic-content .m-input-sub-btn, .m-kingglory-form .m-form-submit, .m-kingglory-form .m-input-row label, .m-kingglory-rule .m-copy p, .m-rebate-form .m-dynamic-content .m-input-sub label, .m-rebate-form .m-dynamic-content .m-input-sub-btn, .m-rebate-form .m-form-submit, .m-rebate-form .m-input-row label, .m-rebate-rule .m-copy p, .m-rebate-rule .m-rule p.tips, .mayDay-button-box, .mayDay-closed, .mayDay-other-prize-show ul li span, .mayDay-pop-content, .mayDay-pop-title, .mayDay-prize-box, .mayDay-prize-name, .mayDay-prize-num, .mayDay-rule-box:after, .mayDay-show-red, .mayDay-table td, .pays .lianDongCode, .phoneget-act-info, .protocol, .redcoupon-fullcut-item .redcoupon-box .coupon-sum, .redlucky-money-item .redcoupon-box .coupon-sum, .reg-content .reg_yz .yz_r a, .reg-content .reg_yz .yz_r img, .register-show-code, .remember h1, .remember_r, .safe, .trj-cash-brank-list dd .icn-cash-select-yes, .trj-cash-brank-list dd span.brank-logo, .trj-cash-brank-list dt, .trj-password-closde, .trj-safe-txt, .trj-servie-mobble, .userinfo .balaner, .userlist li i, .userout button, .wap-trj-btn-box {
+    text-align: center
+}
+
+html {
+    height: 100%
+}
+
+body {
+    height: 100%;
+    background: #f8f8f8;
+    color: #8e8e8e;
+    font-family: SimHei, "Helvetica Neue", Roboto, sans-serif;
+    padding-bottom: 5rem
+}
+
+.pswp__counter {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 44px;
+    font-size: 13px;
+    line-height: 44px;
+    color: #FFF;
+    opacity: .75;
+    padding: 0 10px
+}
+
+.pswp__caption {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    min-height: 44px
+}
+
+.pswp__caption small {
+    font-size: 11px;
+    color: #BBB
+}
+
+.pswp__caption__center {
+    text-align: left;
+    max-width: 420px;
+    margin: 0 auto;
+    font-size: 13px;
+    padding: 10px;
+    line-height: 20px;
+    color: #CCC
+}
+
+.pswp__caption--empty {
+    display: none
+}
+
+.pswp__caption--fake {
+    visibility: hidden
+}
+
+.pswp__preloader {
+    width: 44px;
+    height: 44px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -22px;
+    opacity: 0;
+    -webkit-transition: opacity .25s ease-out;
+    transition: opacity .25s ease-out;
+    will-change: opacity
+}
+
+.pswp__preloader__icn {
+    width: 20px;
+    height: 20px;
+    margin: 12px
+}
+
+.pswp__preloader--active {
+    opacity: 1
+}
+
+.pswp__preloader--active .pswp__preloader__icn {
+    background: url(/images/photoswipe/preloader.gif) no-repeat
+}
+
+.pswp--css_animation .pswp__preloader--active {
+    opacity: 1
+}
+
+.pswp--css_animation .pswp__preloader--active .pswp__preloader__icn {
+    -webkit-animation: clockwise 500ms linear infinite;
+    animation: clockwise 500ms linear infinite
+}
+
+.pswp--css_animation .pswp__preloader--active .pswp__preloader__donut {
+    -webkit-animation: donut-rotate 1000ms cubic-bezier(.4, 0, .22, 1) infinite;
+    animation: donut-rotate 1000ms cubic-bezier(.4, 0, .22, 1) infinite
+}
+
+.pswp--css_animation .pswp__preloader__icn {
+    background: 0 0;
+    opacity: .75;
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    margin: 0
+}
+
+.pswp--css_animation .pswp__preloader__cut {
+    position: relative;
+    width: 7px;
+    height: 14px;
+    overflow: hidden
+}
+
+.pswp--css_animation .pswp__preloader__donut {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #FFF;
+    border-radius: 50%;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: 0 0;
+    margin: 0
+}
+
+@media screen and (max-width: 1024px) {
+    .pswp__preloader {
+        position: relative;
+        left: auto;
+        top: auto;
+        margin: 0;
+        float: right
+    }
+}
+
+@-webkit-keyframes clockwise {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg)
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes clockwise {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg)
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg)
+    }
+}
+
+@-webkit-keyframes donut-rotate {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0)
+    }
+
+    50% {
+        -webkit-transform: rotate(-140deg);
+        transform: rotate(-140deg)
+    }
+
+    100% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0)
+    }
+}
+
+@keyframes donut-rotate {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0)
+    }
+
+    50% {
+        -webkit-transform: rotate(-140deg);
+        transform: rotate(-140deg)
+    }
+
+    100% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0)
+    }
+}
+
+.pswp__ui {
+    -webkit-font-smoothing: auto;
+    visibility: visible;
+    opacity: 1;
+    z-index: 1550
+}
+
+.pswp__top-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 44px;
+    width: 100%
+}
+
+.pswp--has_mouse .pswp__button--arrow--left, .pswp--has_mouse .pswp__button--arrow--right, .pswp__caption, .pswp__top-bar {
+    -webkit-backface-visibility: hidden;
+    will-change: opacity;
+    -webkit-transition: opacity 333ms cubic-bezier(.4, 0, .22, 1);
+    transition: opacity 333ms cubic-bezier(.4, 0, .22, 1)
+}
+
+.pswp--has_mouse .pswp__button--arrow--left, .pswp--has_mouse .pswp__button--arrow--right {
+    visibility: visible
+}
+
+.pswp__caption, .pswp__top-bar {
+    background-color: rgba(0, 0, 0, .5)
+}
+
+.pswp__ui--fit .pswp__caption, .pswp__ui--fit .pswp__top-bar {
+    background-color: rgba(0, 0, 0, .3)
+}
+
+.pswp__ui--idle .pswp__button--arrow--left, .pswp__ui--idle .pswp__button--arrow--right, .pswp__ui--idle .pswp__top-bar {
+    opacity: 0
+}
+
+.pswp__ui--hidden .pswp__button--arrow--left, .pswp__ui--hidden .pswp__button--arrow--right, .pswp__ui--hidden .pswp__caption, .pswp__ui--hidden .pswp__top-bar {
+    opacity: .001
+}
+
+.pswp__ui--one-slide .pswp__button--arrow--left, .pswp__ui--one-slide .pswp__button--arrow--right, .pswp__ui--one-slide .pswp__counter {
+    display: none
+}
+
+.pswp__element--disabled {
+    display: none !important
+}
+
+.pswp--minimal--dark .pswp__top-bar {
+    background: 0 0
+}
+
+input[type=password], input[type=text] {
+    line-height: normal;
+    -webkit-appearance: none
+}
+
+.ionic-body, body {
+    line-height: normal
+}
+
+img {
+    height: auto
+}
+
+p {
+    margin: 0
+}
+
+.icon-logo {
+    width: 2.9787rem;
+    height: 2.9787rem;
+    background: url(../images/logo_70.png) no-repeat;
+    background-size: 100%;
+    display: inline-block
+}
+
+.reg {
+    margin-top: 1.3rem;
+    position: relative
+}
+
+.reg input {
+    width: 100%;
+    height: 4.12rem;
+    border: 1px solid #d8d8d8;
+    border-left: none;
+    border-right: none;
+    font-size: 1.53rem;
+    color: #666;
+    padding-left: 4rem;
+    -webkit-appearance: none;
+    vertical-align: middle
+}
+
+.reg span.iconfont {
+    font-size: 1.8rem;
+    color: #bdbdbd;
+    line-height: 4.24rem;
+    position: absolute;
+    padding: 0 1.27rem
+}
+
+.reg span.jiantou {
+    font-size: 1.48rem;
+    color: #ff811c;
+    position: absolute;
+    padding: 0 1.27rem;
+    right: 0;
+    top: 0
+}
+
+.reg span.email {
+    font-size: 1.5rem
+}
+
+.reg.reg-login-txt {
+    padding: 0 0 0 1.27rem;
+    font-size: 1.277rem
+}
+
+.userinfo .details p {
+    font-size: 1.11rem;
+    color: rgba(255, 255, 255, .5)
+}
+
+.userinfo .details .details_l {
+    width: 50%;
+    border-right: 1px solid rgba(255, 255, 255, .24)
+}
+
+.userinfo .details .details_r {
+    width: 50%;
+    text-align: right
+}
+
+.userinfo .details li.details-top {
+    padding-bottom: 1.787234042553191rem
+}
+
+.trj-detais_l-num {
+    color: #fff;
+    font-size: 1.231914893617021rem;
+    line-height: 1.5
+}
+
+.nx-userinfo2 {
+    padding-top: 0;
+    background: url(../images/invest_01.jpg) no-repeat;
+    background-size: 100% 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.nx-userinfo2 .nx-suer-top {
+    padding-left: 4.06596rem;
+    padding-right: 2.89362rem;
+    overflow: hidden
+}
+
+.nx-userinfo2 .nx-suer-top div span {
+    display: block;
+    font-size: 1.2rem;
+    padding-top: 1.82979rem;
+    padding-bottom: 1.06383rem;
+    color: #fff
+}
+
+.member-center {
+    display: block;
+    width: 8rem;
+    height: 2.2rem;
+    background-image: url(../images/my_nav_member_v.png);
+    background-size: 88%;
+    background-repeat: no-repeat;
+    padding: 0px;
+}
+
+.trj-account-user-img {
+    top: .8936170212765957rem;
+    left: 1.021rem;
+    width: 2.383rem;
+    height: 2.383rem;
+    background: url(../images/userimage.png) no-repeat;
+    background-size: cover
+}
+
+.nx-userinfo2 .nx-suer-top div .trj-account-user-img {
+    top: 17px;
+    left: 0.5rem;
+    width: 45px;
+    height: 45px;
+    background-image: url(../images/head_03.png);
+}
+
+.nx-userinfo2 .nx-suer-top div .uesr2 {
+    width: 1.48936rem;
+    height: 1.8rem;
+    background-image: url(../images/myInfo_news.png);
+    right: 30px;
+    top: 75px;
+    left: auto;
+    font-weight: bold;
+}
+
+.nx-userinfo2 .nx-suer-top div .nx-ellipse-icon {
+    width: .59574rem;
+    height: .59574rem;
+    display: inline-block;
+    border-radius: .29787rem;
+    background-color: #ff3201;
+    border: 2px solid #fff;
+    position: absolute;
+    font: inherit;
+    top: 1.4rem;
+    right: 1.31915rem
+}
+
+.nx-userinfo2 .nx-balaner {
+    margin-top: 3rem;
+    padding-left: 1.23404rem;
+    padding-right: 2.19149rem;
+    position: relative;
+    display:inline-block;
+    font-size:1.6em;
+}
+
+.nx-userinfo2 .nx-balaner span {
+    color: #fff
+}
+
+.nx-userinfo2 .nx-balaner p {
+    font-size: 1.101489361702128rem;
+    color: #ffebd3
+}
+
+.nx-userinfo2 .nx-balaner .eyes {
+    width: 15%;
+    height: 50%;
+    top: 2.3383rem;
+    right: 0.44681rem;
+    position: absolute;
+    /* vertical-align: baseline; */
+    font: inherit;
+    font-size: 100%;
+    background-size: cover;
+    background-image: url(../images/qiandao.png);
+}
+
+.nx-userinfo2 .nx-details {
+    width: 100%;
+    padding: 1.3rem 0 1.44681rem 1.23404rem;
+}
+
+.nx-userinfo2 .nx-details .details_l {
+    border-right: 1px solid #ffebd3
+}
+
+.nx-userinfo2 .nx-details .details_r {
+    text-align: left;
+    padding-left: 1.48936rem
+}
+
+.nx-userinfo2 .nx-details li.details-top {
+    padding-bottom: 0
+}
+
+.nx-userinfo2 .nx-details span {
+    color: #fff
+}
+
+.nx-userinfo2 .nx-details p {
+    padding-top: .3rem;
+    color: #ffebd3
+}
+
+.f_r {
+    float: right;
+}
+
+.mod {
+    height: 6rem;
+    padding: 1rem 0;
+    background: #fff;
+    position: relative;
+    margin: 0.86rem 0px;
+    border-bottom: 1px solid #d8d8d8;
+    border-top: 1px solid #d8d8d8;
+}
+
+.mod .all {
+    width: 33.3%;
+    float: left;
+    font-size: 0.79012rem;
+    color: #aaa;
+    border-right: 1px solid #d8d8d8;
+}
+
+.mod .all2 {
+    width: 33.3%;
+    float: left;
+    font-size: 0.79012rem;
+    color: #aaa;
+}
+
+.mod .all div {
+    margin-top: -0.6rem;
+    text-align: center;
+}
+
+.h4, .h5, .h6, h4, h5, h6 {
+    text-align: center;
+
+}
+
+/* 列表 */
+.hui-list {
+    padding: 0px;
+    border: 1px solid #E4E3E6;
+    border-left: 0;
+    border-right: 0;
+    background: #FFFFFF;
+}
+
+.hui-list li {
+    position: relative;
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+    height: 50px;
+    background: #fff url("../images/nlink.png") no-repeat 98% center;
+    background-size: auto 1rem;
+    padding-right:1.2rem;
+}
+
+.hui-list li > a, .hui-list > a {
+    display: flex;
+    width: 100%;
+    height: 50px;
+    overflow: hidden; /* border-bottom: 1px solid #ededed; *//* border-top: 1px solid #ededed; */
+}
+
+.hui-list li:active, .hui-list > a:active {
+    background-color: #ECECEC;
+}
+
+.hui-list-text {
+    line-height: 49px;
+    height: 49px;
+    width: 100%;
+    margin-left: 12px;
+    border-bottom: 1px solid #E4E3E6;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hui-list-text-content {
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.hui-list-icons {
+    margin: 10px 0px;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 25px;
+    text-align: center;
+    line-height: 22px;
+    color: #3388FF;
+}
+
+.hui-list-icons img {
+    width: 22px;
+    margin-left: 12px;
+}
+
+.hui-list-info {
+    color: #999;
+    float: right;
+    padding-right: 6px !important;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.hui-list-info * {
+    color: #999;
+    font-size: 13px;
+}
+
+.hui-list li:last-child .hui-list-text, .hui-list > a:last-child .hui-list-text {
+    border: 0;
+}
+
+/* 按钮 */
+.hui-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 3px;
+    border: 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    display: block;
+    font-size: 15px;
+    height: 42px;
+    line-height: 42px;
+    outline: 0;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    color: #656B79;
+    background-color: #ffffff;
+    box-shadow: 0 0 1px #B8BBBF;
+    padding: 0px 16px;
+}
+
+.hui-button * {
+    color: inherit;
+}
+
+.hui-button:active {
+    background: #C8C8C8;
+}
+
+.hui-button-large {
+    width: 100%;
+}
+
+.hui-primary {
+    background: #fa7752 !important;
+    color: #FFFFFF !important;
+}
+
+.hui-primary:active {
+    background: #0066CC !important;
+}
+
+.hui-danger {
+    background: #EF4F4F !important;
+    color: #FFFFFF !important;
+}
+
+.hui-danger:active {
+    background: #FF0000 !important;
+}
+
+.hui-button-small {
+    height: 30px;
+    line-height: 30px;
+    padding: 0px 15px;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 3px;
+}
+
+.grade-cont{
+    background:#fff;
+    border-radius: 10px;
+    padding:2px 5px;
+}
+.grade-2,.grade-3,.grade-4{
+    color:#fb661e
+}
+.grade-cont .v{
+    margin-right:2px;
+}
+.grade-cont .v addr{
+    font-size:16px;
+}
+.team-2{
+    color:blue
+}
+.team-3{
+    color:green
+}
+.team-4{
+    color:yellow;
+}
+.team-5{
+    color:yellowgreen;
+}
