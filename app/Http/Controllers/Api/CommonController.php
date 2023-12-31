@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Category;
 use App\Http\Controllers\Controller;
 use App\Member;
 use App\Productbuy;
@@ -25,19 +26,31 @@ class CommonController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request){
-        $data['banner'] = DB::table('advertisementdatas')->select('thumb_url','title')->where(['adverid'=>1])->limit(4)->get();;
+        /* banner */
+        if(Cache::has("index_banner")){
+            $index_banner = Cache::get("index_banner");
+        }else{
+            $index_banner = DB::table('advertisementdatas')->select('thumb_url','title')->where(['adverid'=>1])->limit(4)->get();
+            Cache::forever("index_banner",$index_banner);
+        }
+        $data['banner'] = $index_banner;
         /* 弹出公告 */
         if(Cache::has("index_notice")){
             $index_notice = Cache::get("index_notice");
         }else{
-            $alert_notice = DB::table("articles")->where(['category_id'=>7,'title'=>'首页弹出公告'])->value('content');
-            $pregRule = "/<[img|IMG].*?src=[\'|\"](.*?(?:[\.jpg|\.jpeg|\.png|\.gif|\.bmp]))[\'|\"].*?[\/]?>/";
-            $index_notice = preg_replace($pregRule, '<img src="' . ENV('FILE_URL') . '${1}" style="width:100%">', $alert_notice);
+            $index_notice = DB::table("articles")->where(['category_id'=>7,'title'=>'首页弹出公告'])->value('content');
             Cache::forever("index_notice",$index_notice);
         }
         $data['alert_notice'] = $index_notice;
-
-        /*滚动公告*/
+        /*首页分类*/
+        if(Cache::has("index_category")){
+            $index_category = Cache::get("index_category");
+        }else{
+            $index_category = DB::table('category')->where(['model'=>'products'])->orderBy('sort','desc')->get(['id','name','thumb_url']);
+            Cache::forever("index_category",$index_category);
+        }
+        $data['category'] = $index_category;
+//        /*滚动公告*/
         if(Cache::has("index_scroll")){
             $list = Cache::get("index_scroll");
         }else{
@@ -49,8 +62,6 @@ class CommonController extends Controller
             Cache::forever("index_scroll",$list);
         }
         $data['scroll_notice'] = $list;
-        $wealth_list = DB::table('member_wealth')->orderBy('create_data','desc')->limit(50)->get(['name','num_name'])->toArray();
-        $data['wealth_list'] = $wealth_list;
         return response()->json(["status"=>1,"msg"=>"返回成功","data"=>$data]);
     }
 
@@ -62,9 +73,11 @@ class CommonController extends Controller
         return response()->json(["status"=>1,"msg"=>"返回成功","data"=>$list]);
     }
 
-	public function getselltips(Request $request){
-        $data['curr_sell_tips'] = DB::table("setings")->where('keyname','curr_sell_tips')->value('value');//卖出提示
-        return response()->json(["status"=>1,"msg"=>"返回成功","data"=>$data]);
+    public function categoryList(Request $request){
+        $limit = $request->get('limit',20);
+        $data = DB::table('category')->where(['model'=>'products'])->limit($limit)->orderBy('sort','desc')->get(['id','name'])->toArray();
+        $list= array_merge([['id'=>0,'name'=>'全部']],$data);
+        return response()->json(["status"=>1,"msg"=>"ok","data"=>$list]);
     }
 
     /**
@@ -72,18 +85,21 @@ class CommonController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function product(Request $request): \Illuminate\Http\JsonResponse
+    public function productList(Request $request): \Illuminate\Http\JsonResponse
     {
         $pageSize = $request->get('pageSize',10);
         $page = $request->get('page',1);
-        $category_id = $request->get('category_id',8);
-
-         $list=DB::table("products")
-             ->select('id','title','price')
-              ->where(['category_id'=>$category_id,'status'=>1])
-              ->orderBy("sort","desc")
-                ->paginate($pageSize, ['*'], 'page', $page);
-
+        $category_id = $request->get('category_id',0);
+        $keywords = $request->get('keywords','');
+         $product = DB::table("products")
+                    ->select('id','title','start_amount','pic','income_rate','insured_amount','scope','indemnity_time','indemnity_time_name','tag_name','describe');
+         if($category_id > 0){
+             $product->where(['category_id'=>$category_id,'status'=>1]);
+         }
+         if(!empty($keywords)){
+             $product->where('title','like','%'.$keywords.'%');
+         }
+        $list=   $product->orderBy("sort","desc")->paginate($pageSize, ['*'], 'page', $page);
         return response()->json(["status"=>1,"msg"=>"ok","data"=>$list]);
     }
 
@@ -93,12 +109,14 @@ class CommonController extends Controller
     {
         $id = $request->get('id',0);
         if($id<=0){
-            return response()->json(["status"=>0,"msg"=>"该项目不存在或已下架！"]);
+            return response()->json(["status"=>0,"msg"=>"产品已下架"]);
         }
         $product=DB::table("products")
-            ->select('id','title','pic','describe','price')
+            ->select('id','title','start_amount','income_rate','min_num','max_num','insured_amount','indemnity_time_name','assure_name','assure_text','assure_list','tag_name','compensation_amount','compensation_text','age','wait_time','claims_info','company')
             ->where(['id'=>$id,'status'=>1])
             ->first();
+        $product->claims_info = json_decode($product->claims_info,true);
+        $product->assure_list = json_decode($product->assure_list,true);
         return response()->json(["status"=>1,"msg"=>"ok","data"=>$product]);
     }
 

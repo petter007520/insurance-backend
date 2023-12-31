@@ -22,27 +22,29 @@ class PayOrderController extends Controller
         DB::beginTransaction();
         try {
             $pro_buy_data = DB::table("productbuy")
-                ->select('id', 'userid', 'username', 'productid', 'status', 'num', 'amount','real_amount', 'pay_status', 'category_id', 'ip','pay_type','type','before_order_id','created_at')
+                ->select('id', 'userid', 'username', 'productid', 'status', 'num', 'amount', 'pay_status', 'category_id', 'ip','pay_type','created_at')
                 ->where(['id' => $order_id])->first();
             if (!$pro_buy_data) {
                 Log::channel('pay')->warning('查无订单(' . $order_id . ')');
                 return ["status" => 0, "msg" => "查无订单!"];
             }
-            if( $pro_buy_data->status!=1){
+            if( $pro_buy_data->status!=0){
                 Log::channel('pay')->warning('该订单还未完成支付('.$order_id.')');
                 return ["status"=>0,"msg"=>"该订单还未完成支付"];
             }
-            $Member = Member::where(['id' => $pro_buy_data->userid])->first(['id', 'username','nickname', 'amount', 'level','status','invite_uid']);
+            $Member = Member::where(['id' => $pro_buy_data->userid])->first(['id', 'username','nickname', 'ktx_amount', 'level','status','invite_uid','health_amount','apply_amount','health_ktx_amount']);
             $product = DB::table("products")
-                ->select('id', 'title', 'category_id','rebate_type', 'collision_times','is_rebate','wealth_rate')
+                ->select('id', 'title', 'category_id','rebate_type','is_rebate','health_rate','health_ktx_rate')
                 ->where(['id' => $pro_buy_data->productid])
                 ->first();
 
-            // 可获得对碰奖励金额  | 购买产品,用户激活
-            DB::table("member")->where(['id' => $Member->id])->update(['status'=>1,'collision_amount'=>$pro_buy_data->amount * $product->wealth_rate]);
-
+            //购买产品,用户激活
+            if(!$Member->status){
+                $Member->status=1;
+                $Member->save();
+            }
             //流水统计金额
-            $capital_flow = $pro_buy_data->real_amount;
+            $capital_flow = $pro_buy_data->amount;
             //添加个人统计
             DB::table('statistics')->where('user_id', $Member->id)->increment('capital_flow', $capital_flow);
             //添加后台统计
@@ -56,24 +58,21 @@ class PayOrderController extends Controller
             if(in_array($pro_buy_data->pay_type,[2,3,4])){
                 $type_title = '';
                 if($pro_buy_data->pay_type == 2){
-                    $type_title = '购买财富,银联付款';
+                    $type_title = '购买产品,银联付款';
                 }
-                if($pro_buy_data->pay_type == 5){
-                    $type_title = '购买财富,USDT付款';
-                }
-                if(in_array($pro_buy_data->pay_type,[3,4])){
-                    $type_title = '购买财富,线上支付';
+                if(in_array($pro_buy_data->pay_type,[3,4,5])){
+                    $type_title = '购买产品,线上支付';
                 }
                 //购买产品日志
                 $log=[
                     "userid"=>$Member->id,
                     "username"=>$Member->username,
-                    "money"=>$pro_buy_data->real_amount,
-                    "notice"=>"购买财富(".$product->title.")",
+                    "money"=>$pro_buy_data->amount,
+                    "notice"=>"购买(".$product->title.")",
                     "type"=>$type_title,
                     "status"=>"-",
-                    "yuanamount"=>$Member->amount,
-                    "houamount"=>$Member->amount,
+                    "yuanamount"=>$Member->ktx_amount,
+                    "houamount"=>$Member->ktx_amount,
                     "ip"=>$pro_buy_data->ip,
                     "category_id"=>$product->category_id,
                     "product_id"=>$product->id,
@@ -83,6 +82,68 @@ class PayOrderController extends Controller
                 ];
                 \App\Moneylog::AddLog($log);
             }
+            //健康金
+            if($product->health_rate > 0){
+                $health_money = $pro_buy_data->amount*$product->health_rate;
+                $before_health_amount = $Member->health_amount;
+                $Member->increment('health_amount', $health_money);
+                $log = [
+                    "userid" => $Member->id,
+                    "username" => $Member->username,
+                    "money" => $health_money,
+                    "product_title" => $product->title,
+                    "notice" => '购买产品赠送健康金',
+                    "type" => "产品赠送",
+                    "status" => "+",
+                    "buy_id" => $pro_buy_data->id,
+                    "yuanamount" => $before_health_amount,
+                    "houamount" => $Member->health_amount,
+                    "ip"=>$pro_buy_data->ip,
+                ];
+                \App\Moneylog::AddLog($log);
+
+                //可提现健康金
+                $ktx_health_money = $health_money * $product->health_ktx_rate/100;
+                if($ktx_health_money > 0){
+                    $before_health_ktx_amount= $Member->health_ktx_amount;
+                    $Member->increment('health_ktx_amount', $ktx_health_money);
+                    $log = [
+                        "userid" => $Member->id,
+                        "username" => $Member->username,
+                        "money" => $ktx_health_money,
+                        "product_title" => $product->title,
+                        "notice" => '购买产品(赠送健康金可提现)',
+                        "type" => "赠送余额可提现",
+                        "status" => "+",
+                        "buy_id" => $pro_buy_data->id,
+                        "yuanamount" => $before_health_ktx_amount,
+                        "houamount" => $Member->health_ktx_amount,
+                        "ip"=>$pro_buy_data->ip,
+                    ];
+                    \App\Moneylog::AddLog($log);
+                }
+
+                //可申请健康金调额
+                $apply_amount_rate = 20;
+                $apply_amount = $health_money * $apply_amount_rate;
+                $before_apply_amount = $Member->apply_amount;
+                $Member->increment('apply_amount', $apply_amount);
+                $log = [
+                    "userid" => $Member->id,
+                    "username" => $Member->username,
+                    "money" => $apply_amount,
+                    "product_title" => $product->title,
+                    "notice" => '购买产品可调额度上升',
+                    "type" => "产品赠送",
+                    "status" => "+",
+                    "buy_id" => $pro_buy_data->id,
+                    "yuanamount" => $before_apply_amount,
+                    "houamount" => $Member->apply_amount,
+                    "ip"=>$pro_buy_data->ip,
+                ];
+                \App\Moneylog::AddLog($log);
+            }
+            //推荐分佣
             if ($is_return) {
                 //当前用户上家
                 $Tichengs = Memberticheng::orderBy("id", "asc")->get();//percent提成比例
@@ -156,22 +217,6 @@ class PayOrderController extends Controller
                     }
                 }
             }
-
-            //购买累计进入总金额
-            $Nowmember = Member::find($Member->id);
-            // 异步处理双区对碰奖励
-            dispatch(new CollisionReward($Nowmember, $pro_buy_data->real_amount, $product))->onQueue('collisionReward');
-            //原订单结束
-            if($pro_buy_data->type == 2 && $pro_buy_data->before_order_id > 0){
-                DB::table('productbuy')->where(['id'=>$pro_buy_data->before_order_id])->update(['status'=>0,'reason'=>'财富等级升级，本订单关闭，新订单ID-'.$order_id]);
-            }
-            $wealth_data = [
-                'name'=>$Member->nickname,
-                'user_id'=>$Member->id,
-                'time'=>$pro_buy_data->created_at,
-                'order_id'=>$pro_buy_data->id
-            ];
-            DB::table('product_wealth')->insert($wealth_data);
             DB::commit();
             return ['status' => 1, 'msg' => '订单完成'];
         }catch (\Exception $e){

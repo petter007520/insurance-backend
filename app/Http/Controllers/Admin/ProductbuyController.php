@@ -1,24 +1,15 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-    use App\Http\Controllers\Api\PayOrderController;
-    use App\Member;
-    use App\Memberlevel;
-    use App\Product;
-    use App\statistics;
-    use App\Productbuy;
-    use App\Category;
-    use Carbon\Carbon;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\DB;
-    use Session;
-    use Cache;
-    use App\Membercurrencys;
-    use Illuminate\Support\Facades\Log;
-	use Illuminate\Support\Facades\App;
-    use App\Bigtree;
-
+use App\Http\Controllers\Api\PayOrderController;
+use App\Memberlevel;
+use App\Product;
+use App\Productbuy;
+use App\Category;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 class ProductbuyController extends BaseController
 {
     private $table="productbuy";
@@ -41,7 +32,6 @@ class ProductbuyController extends BaseController
         }
 				$totalAmount = DB::table($this->table)
                     ->where(['status'=>1])
-                    // ->where(['category_id'=>13,'status'=>1])
                     ->where(function ($query) {
                         $s_siteid=[];
                         if(isset($_REQUEST['s_key']) && $_REQUEST['s_key']!=''){
@@ -276,15 +266,11 @@ class ProductbuyController extends BaseController
             });
             $list=$listDB->orderBy($this->table.".id","desc")->paginate($pagesize);
             if($list){
-                $total_amount =  $ok_total_amount = 0;
                 foreach ($list as $item){
                     $item->product=  isset($this->Products[$item->productid])?$this->Products[$item->productid]->title:'0';
-                    $item->rate=isset($this->Memberlevels[$item->level])?$this->Memberlevels[$item->level]->rate:'0';
                     if(isset($this->Products[$item->productid])){
                         $moneyCount = $this->Products[$item->productid]->jyrsy * $item->amount/100;
                         $item->moneyCount= sprintf("%.2f",$moneyCount);
-                        $elseMoney = $item->rate * $item->amount/100;
-                        $item->elseMoney= sprintf("%.2f",$elseMoney);
                     }else{
                         $item->moneyCount=0;
                     }

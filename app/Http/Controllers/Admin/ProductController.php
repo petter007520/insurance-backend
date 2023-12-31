@@ -1,19 +1,14 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-    use App\Product;
-    use Carbon\Carbon;
-    use App\Category;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Cache;
-    use Illuminate\Support\Facades\DB;
-    use Session;
+use App\Product;
+use Carbon\Carbon;
+use App\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 class ProductController extends BaseController
 {
-
     private $table="products";
-
 
     public function __construct(Request $request)
     {
@@ -33,7 +28,6 @@ class ProductController extends BaseController
             $memberlevel= DB::table("memberlevel")->orderBy("id","asc")->get();
             Cache::get('memberlevel.list',$memberlevel,Cache::get("cachetime"));
         }
-
         view()->share("memberlevel",$memberlevel);
     }
 
@@ -46,8 +40,6 @@ class ProductController extends BaseController
         if(Cache::has('pagesize')){
             $pagesize=Cache::get('pagesize');
         }
-        isset($_REQUEST['s_categoryid'])?$s_categoryid=$_REQUEST['s_categoryid']:$s_categoryid=0;
-        isset($_REQUEST['s_key'])?$s_key=$_REQUEST['s_key']:$s_key='';
         $listDB = DB::table($this->table)
             ->select($this->table.'.*')
            ->where(function ($query) {
@@ -56,7 +48,6 @@ class ProductController extends BaseController
                 $s_key_content=[];
                 if(isset($_REQUEST['s_key'])){
                     $s_key_name[]=[$this->table.".title","like","%".$_REQUEST['s_key']."%"];
-                    $s_key_content[]=[$this->table.".content","like","%".$_REQUEST['s_key']."%"];
                 }
                 $query->orwhere($s_key_name)->orwhere($s_key_bljg)->orwhere($s_key_content);
             })

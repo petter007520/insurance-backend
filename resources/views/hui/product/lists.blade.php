@@ -65,23 +65,24 @@
                     <col>
                     <col>
                     <col>
+                    <col>
                 </colgroup>
                 <thead>
                 <tr>
                     <th>
-                        <div class="layui-unselect header layui-form-checkbox" lay-skin="primary">
-                            <i class="layui-icon">&#xe605;</i>
-                        </div>
+                        <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i>ID</div>
                     </th>
                     <th>分类</th>
                     <th>产品名称</th>
                     <th>产品图片</th>
-                    <th>金额</th>
+                    <th>起购金额</th>
                     <th>静态收益率(%)</th>
-                    <th>财富力(倍)</th>
-                    <th>对碰倍数</th>
-                    <th>开奖周期(天)</th>
-                    <th>投资状态</th>
+                    <th>健康金倍数(倍)</th>
+                    <th>可提现健康金倍数(%)</th>
+                    <th>起购数量</th>
+                    <th>限购数量</th>
+                    <th>保障年限</th>
+                    <th>状态</th>
                     <th>日期</th>
                     <th>操作</th>
                 </tr>
@@ -90,10 +91,6 @@
                 </tbody>
             </table>
         <div id="layer_pages"></div>
-
-
-
-
     </div>
 @endsection
 @section("layermsg")
@@ -109,14 +106,16 @@
                     <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='<% item.id %>'><i class="layui-icon">&#xe605;</i></div>
                     <span style=""><% item.id %></span>
                 </td>
-                <td width="180"><% item.category_name %></td>
+                <td><% item.category_name %></td>
                 <td class="title_<% item.id %>"><% item.title %></td>
                 <td><img src=<% item.pic %> width="20"></td>
-                <td><% item.price %></td>
+                <td><% item.start_amount %></td>
                 <td><% item.income_rate %>%</td>
-                <td><% item.wealth_rate %>倍</td>
-                <td><% item.collision_times %>倍</td>
-                <td><% item.lottery_cycle %>天</td>
+                <td><% item.health_rate %></td>
+                <td><% item.health_ktx_rate %>%</td>
+                <td><% item.min_num %>份</td>
+                <td><% item.max_num %>份</td>
+                <td><% item.indemnity_time %>天</td>
                 <td><%# if(item.status==0){ %>
                     禁用
                 <%# }else if(item.status==1){ %>

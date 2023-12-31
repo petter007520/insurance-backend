@@ -1,68 +1,41 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-
-use App\Store;
-use Carbon\Carbon;
-use DB;
 use App\Advertisement;
 use App\Advertisementdata;
-use App\Productclassify;
 use Illuminate\Http\Request;
-use Session;
-use Cache;
-use App\RouteURL;
+use Illuminate\Support\Facades\Cache;
 
 class AdvertisementdataController  extends  BaseController
 {
-
-
     private $table="advertisementdatas";
-
-
     public function __construct(Request $request)
     {
         parent::__construct($request);
         $this->Models= new Advertisementdata();
         $this->AdMbModels= new Advertisement();
         view()->share("admb",$this->AdMbModels->get());
-
     }
-
-
 
     public function index(Request $request){
-
         return redirect("admin/".$this->controller_name."/lists");
-
     }
 
-
-
-
     public function lists(Request $request){
-
-
-
-
         $pagesize=10;//默认分页数
         if(Cache::has('pagesize')){
             $pagesize=Cache::get('pagesize');
         }
-
         $s_posid=[];
         if($request->input('posid')){
             $s_storeid[]=[$this->table.".adverid","=",$_REQUEST['posid']];
         }
-        $store_auth[]=0;
         $list = DB::table($this->table)
             ->leftJoin('advertisements as adv', 'adv.id', '=', $this->table.'.adverid')
             ->select($this->table.'.*','adv.name as posname')
 
             ->where($s_posid)
             ->where(function ($query) {
-                $s_key_name=[];               
+                $s_key_name=[];
                 if(isset($_REQUEST['s_key'])){
                     $s_key_name[]=[$this->table.".name","like","%".$_REQUEST['s_key']."%"];
 
@@ -109,7 +82,7 @@ class AdvertisementdataController  extends  BaseController
                 'name.required' => '名称不能为空!',
                 'url.required' => '链接地址不能为空!',
                 'adverid.required' => '广告模板ID不能为空!',
-                
+
             ];
 
             $result = $this->validate($request, [
@@ -149,18 +122,21 @@ class AdvertisementdataController  extends  BaseController
             $Model->name = $request->get('name');
             $Model->sort = $request->input('sort');
             $Model->adverid = $request->input('adverid');
-            
+
             $Model->url = $request->input('url');
             $Model->thumb_url = $request->input('thumb_url');
 
             $Model->title = $request->input('title');
-            $Model->code = $request->input('code');            
+            $Model->code = $request->input('code');
 
             $Model->description = $request->input('description');
             $Model->save();
 
 
             if($request->ajax()){
+                if($request->input('adverid')==1){
+                    Cache::forget('index_banner');
+                }
                 return response()->json([
                     "msg"=>"添加成功","status"=>0
                 ]);
@@ -257,7 +233,7 @@ class AdvertisementdataController  extends  BaseController
             $Model->thumb_url = $request->input('thumb_url');
 
             $Model->title = $request->input('title');
-           
+
             $Model->description = $request->input('description');
 
             $Model->save();
@@ -265,6 +241,9 @@ class AdvertisementdataController  extends  BaseController
 
 
             if($request->ajax()){
+                if($request->input('adverid')==1){
+                    Cache::forget('index_banner');
+                }
                 return response()->json([
                     "msg"=>"修改成功","status"=>0
                 ]);
@@ -352,7 +331,7 @@ class AdvertisementdataController  extends  BaseController
     }
 
 
-  
+
 
 
 

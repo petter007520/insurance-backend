@@ -203,9 +203,13 @@ $request->paymentid = 3;
     public function withdraw(Request $request)
     {
         $UserId = $this->Member->id;
-        $type = $request->post('type',1);
+        $type = $request->post('type',1);//提现方式 1-银行卡 3-USDT
+        $withdraw_type = $request->post('withdraw_type','balance');
         if(!in_array($type,[1,3])){
             return response()->json(["status"=>0, "msg"=>"提现方式不支持"]);
+        }
+        if(!in_array($withdraw_type,['balance','health'])){
+            return response()->json(["status"=>0, "msg"=>"提现类型不支持"]);
         }
         $txtime=Cache::get("tixiantime");
         if(!$txtime){
@@ -251,7 +255,17 @@ $request->paymentid = 3;
         }
 
         $Member= Member::find($UserId);
-        if($Member->ktx_amount<$amount){
+        switch ($withdraw_type){
+            case 'balance':
+                $withdrawField = 'ktx_amount';
+                break;
+            case 'health':
+                $withdrawField = 'health_ktx_amount';
+                break;
+            default:
+                $withdrawField = 'ktx_amount';
+        }
+        if($Member->$withdrawField<$amount){
             return response()->json(["status"=>0, "msg"=>"帐户余额不足"]);
         }
 
@@ -260,7 +274,7 @@ $request->paymentid = 3;
         $fee = sprintf("%.2f",$withdra_fee *$amount *0.01);
         $after_amount = sprintf("%.2f",$amount- $fee);
 
-        $data = \App\Memberwithdrawal::AddWithdrawal($UserId, $amount,$request->bank_id,$after_amount,$fee,$type);
+        $data = \App\Memberwithdrawal::AddWithdrawal($UserId, $amount,$request->bank_id,$after_amount,$fee,$type,$withdraw_type);
         if($data['status']== 1){
             return response()->json(["status"=>1, "msg"=>"提现成功"]);
         }else{

@@ -52,9 +52,11 @@ class ArticlesController extends Controller
     }
 
     public function detailWithType(Request $request){
-        $type = $request->get('type',0);
+        $type = $request->get('type','');
         $data =  DB::table("articles")->select('category_id','content','image','title','keyinfo','updated_at','descr','click_count')->where(['key'=>$type,'status'=>2])->first();
-        $data->updated_at = substr($data->updated_at,0,16);
+        if($data){
+            $data->updated_at = substr($data->updated_at,0,16);
+        }
         return response()->json(['status'=>1,'data'=>$data]);
     }
 

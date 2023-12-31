@@ -258,6 +258,7 @@ Route::any('payment/lists', ['as'=>'payment.lists','uses'=>'PaymentController@li
 Route::any('payment/index', ['as'=>'payment.index','uses'=>'PaymentController@index']);
 Route::any('payment/update', ['as'=>'payment.update','uses'=>'PaymentController@update']);
 Route::any('payment/delete', ['as'=>'payment.delete','uses'=>'PaymentController@delete']);
+Route::any('payment/settop', ['as'=>'payment.settop','uses'=>'PaymentController@settop']);
 
 //转盘设置
 Route::any('lotteryconfig/store', ['as'=>'lotteryconfig.store','uses'=>'LotteryconfigController@store']);
@@ -282,8 +283,8 @@ Route::any('member/tree', ['as'=>'member.tree','uses'=>'MemberController@tree'])
 Route::any('member/switchonoff', ['as'=>'member.switchonoff','uses'=>'MemberController@switchonoff']);//会员禁用/启用
 Route::any('memberaddress/lists', ['as'=>'memberaddress.lists','uses'=>'MemberaddressController@lists']);
 
-Route::any('travellog/lists', ['as'=>'travellog.lists','uses'=>'TravelLogController@lists']);
-Route::any('travellog/set_notice', ['as'=>'travellog.set_notice','uses'=>'TravelLogController@set_notice']);
+Route::any('apply_health/lists', ['as'=>'apply_health.lists','uses'=>'ApplyHealthController@lists']);
+Route::any('apply_health/set_notice', ['as'=>'apply_health.set_notice','uses'=>'ApplyHealthController@set_notice']);
 
 //会员等级管理
 Route::any('memberlevel/store', ['as'=>'memberlevel.store','uses'=>'MemberlevelController@store']);

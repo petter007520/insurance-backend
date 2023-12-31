@@ -76,6 +76,14 @@
         </div>
     </div>
     <div class="layui-form-item">
+        <label class="layui-form-label col-sm-1">排序</label>
+        <div class="layui-input-inline">
+            <label>
+                <input type="text" name="sort" class="layui-input" placeholder="排序" value="{{$edit->sort}}">
+            </label>
+        </div>
+    </div>
+    <div class="layui-form-item">
         <label class="layui-form-label col-sm-1">图标</label>
         <div class="layui-input-block">
             <button type="button" class="layui-btn" id="thumb_url" style="float:left;">

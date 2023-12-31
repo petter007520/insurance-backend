@@ -1,13 +1,9 @@
 <?php
 
 namespace App;
-
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Session\Session;
-use Cache;
-use DB;
-
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class Payment extends Model
 {
@@ -15,13 +11,10 @@ class Payment extends Model
     protected $primaryKey="id";
     public $timestamps=true;
     protected $guarded=[];
-    protected $fillable = ['pay_code','pay_name','pay_bank','pay_pic','pay_desc','enabled'];
+    protected $fillable = ['pay_code','pay_name','pay_bank','pay_pic','pay_desc','enabled','sort'];
 
 
     protected function GetPayment(){
-
-
-
             $Tmp=[];
             if(Cache::has("mobile.payment")){
                 $Tmp=Cache::get("mobile.payment");
@@ -35,18 +28,10 @@ class Payment extends Model
                 Cache::put("mobile.payment",$Tmp,Cache::get('cachetime'));
 
             }
-
-
-
-
-
         return $Tmp;
     }
 
     protected function GetPaymentName($type){
-
-
-
             $Tmp=[];
             if(Cache::has("mobile.paymentname")){
                 $Tmp=Cache::get("mobile.paymentname");

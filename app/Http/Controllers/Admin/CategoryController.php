@@ -1,14 +1,9 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-
-    use DB;
-    use App\Category;
-    use Illuminate\Http\Request;
-    use Session;
-    use Cache;
-
+use App\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends BaseController
 {
@@ -74,21 +69,14 @@ class CategoryController extends BaseController
     public function store(Request $request){
 
         if($request->isMethod("post")){
-
-
-
             $messages = [
                 'name.required' => '名称不能为空!',
                 'sort.required' => '排序不能为空!',
-                //'color.required' => '颜色值不能为空!',
             ];
-            $result = $this->validate($request, [
+           $this->validate($request, [
                 "name"=>"required",
                 "sort"=>"required",
-                //"color"=>"required",
             ], $messages);
-
-
             if($request->input('model')!='links'){
                $conut= $this->Model::where("links",$request->input('links'))->count();
                if($conut>0){
@@ -120,6 +108,9 @@ class CategoryController extends BaseController
 
 
             if($request->ajax()){
+                if($request->input('model') == 'products'){
+                    Cache::forget('index_category');
+                }
                 return response()->json([
                     "msg"=>"添加成功","status"=>0
                 ]);
@@ -146,25 +137,17 @@ class CategoryController extends BaseController
     public function update(Request $request)
     {
         if($request->isMethod("post")){
-
             $messages = [
                 'name.required' => '名称不能为空!',
                 'sort.required' => '排序不能为空!',
-                //'color.required' => '颜色值不能为空!',
             ];
-
-            $result = $this->validate($request, [
+            $this->validate($request, [
                 "name"=>"required",
                 "sort"=>"required",
-               // "color"=>"required",
             ], $messages);
-
-
             if($request->input('model')!='links'){
                 $conut= $this->Model::where("links",$request->input('links'))->whereNotIn("id",[$request->input('id')])->count();
                 if($conut>0){
-
-
                     if($request->ajax()){
                         return response()->json([
                             "msg"=>"目录名称已存在","status"=>1
@@ -173,9 +156,7 @@ class CategoryController extends BaseController
                         return redirect(route($this->RouteController.'.update',["id"=>$request->input("id")]))->with(["msg"=>"目录名称已存在","status"=>1]);
                     }
                 }
-
             }
-
             $Model = $this->Model::find($request->input('id'));
             $Model->name = $request->get('name');
             $Model->sort = $request->input('sort');
@@ -184,36 +165,27 @@ class CategoryController extends BaseController
             $Model->links = $request->input('links');
             $Model->parent = $request->input('parent');
             $Model->color = $request->input('color');
-
             $Model->ctitle = \App\Formatting::ToFormat($request->input('ctitle'));
             $Model->classname = $request->input('classname');
             $Model->ckeywords = \App\Formatting::ToFormat($request->input('ckeywords'));
             $Model->cdescription = \App\Formatting::ToFormat($request->input('cdescription'));
             $Model->ccontent = \App\Formatting::ToFormat($request->input('ccontent'));
-
             $Model->save();
-
-
-
             if($request->ajax()){
+                if($request->input('model') == 'products'){
+                    Cache::forget('index_category');
+                }
                 return response()->json([
                     "msg"=>"修改成功","status"=>0
                 ]);
             }else{
                 return redirect(route($this->RouteController.'.update',["id"=>$request->input("id")]))->with(["msg"=>"修改成功","status"=>0]);
             }
-
-
         }else{
-
-
             $Model = $this->Model::find($request->get('id'));
-
             view()->share("tree_option",$this->Model->tree_option(0,0,$Model->parent,$Model->id));
-
             return $this->ShowTemplate(["edit"=>$Model,"status"=>0]);
         }
-
     }
 
     public function atindex(Request $request)

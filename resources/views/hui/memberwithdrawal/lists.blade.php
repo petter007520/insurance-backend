@@ -30,6 +30,13 @@
                     </select>
                 </div>
                 <div class="layui-form layui-input-inline">
+                    <select name="amount_type" lay-search lay-filter="amount_type" lay-search>
+                        <option value="" >提现类型</option>
+                        <option value="balance" @if(isset($_REQUEST['amount_type']) && $_REQUEST['amount_type']=='balance')selected="selected" @endif>余额</option>
+                        <option value="health" @if(isset($_REQUEST['amount_type']) && $_REQUEST['amount_type']=='health')selected="selected" @endif>健康金余额</option>
+                    </select>
+                </div>
+                <div class="layui-form layui-input-inline">
                     <input class="layui-input"  autocomplete="off" placeholder="开始日" name="date_s" id="date_s" value="@if(isset($_REQUEST['date_s'])){{$_REQUEST['date_s']}}@endif">
                     <input class="layui-input"  autocomplete="off" placeholder="截止日" name="date_e" id="date_e" value="@if(isset($_REQUEST['date_e'])){{$_REQUEST['date_e']}}@endif">
                 </div>
@@ -76,12 +83,11 @@
                 <th>ID</th>
                 <th>会员帐号</th>
                 <th>实名信息</th>
+                <th>提现类型</th>
                 <th>银行账户</th>
                 <th>提现金额</th>
                 <th>手续费</th>
                 <th>到账金额</th>
-                <th>到账USDT</th>
-                <th>USDT汇率</th>
                 <th>状态</th>
                 <th>申请日期</th>
                 <th>备注</th>
@@ -101,14 +107,18 @@
     <script id="demo" type="text/html">
         <%#  layui.each(d.data, function(index, item){ %>
         <tr>
-            <td>
-                <% item.id %>
-            </td>
-
+            <td><% item.id %></td>
             <td><% item.username %></td>
             <td>
                 真实姓名：<% item.realname %> <br>
                 身份证号：<% item.card %><br>
+            </td>
+            <td>
+                <%# if(item.amount_type=='balance'){ %>
+                    <em style="color: red">余额</em>
+                <%# }else if(item.amount_type=='health'){ %>
+                    <em style="color: #0e90d2">健康金余额</em>
+                <%# }%>
             </td>
             <td>
                 <%# if(item.type==1){ %>
@@ -126,8 +136,6 @@
             <td>
                 <% item.after_amount %>
             </td>
-            <td><% item.after_usdt %></td>
-            <td><% item.usdt_rate %></td>
             <td>
                 <%# if(item.status==0){ %>
                     未处理

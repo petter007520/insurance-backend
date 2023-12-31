@@ -247,7 +247,7 @@ class PublicController
         }
 
         //邀请码判断是否存在
-        $invite_user = Member::select('id', 'username', 'top_uid', 'level', 'invilast','family_ids')->where("invicode", $invite_code)->first();
+        $invite_user = Member::select('id', 'username', 'top_one_uid','top_two_uid', 'top_three_uid','level', 'invilast','family_ids')->where("invicode", $invite_code)->first();
         if (!$invite_user) {
             return array('status' => "0",'msg' => "您输入的邀请人推荐ID不存在");
         } else {
@@ -283,20 +283,19 @@ class PublicController
             $RegMember->invite_uid = $invite_user['id'];
             $RegMember->picImg = 20;
             $RegMember->gender = 1;
-            $RegMember->state = 0;
-            $RegMember->ip =
+            $RegMember->state = 1;
+            $RegMember->top_one_uid = max($invite_user['id'], 0);;
+            $RegMember->top_two_uid = max($invite_user['top_one_uid'], 0);
+            $RegMember->top_three_uid = max($invite_user['top_two_uid'], 0);
+            $RegMember->ip = $request->ip();
             $RegMember->reg_from = $platform;
             $RegMember->amount = $reg_gift_amount > 0 ? $reg_gift_amount : 0;
             $RegMember->created_date = $now_date;
             $RegMember->region = $area;
             $RegMember->save();
 
-
-            $invitor = DB::table('member')
-                ->where(['invicode' => $invite_code])
-                ->first();
-            if ($invitor){
-                $user_id = $invitor->id;
+            if ($invite_user){
+                $user_id = $invite_user->id;
                 $score = 100;
                 $type = 1;
                 $source_type = 6;
@@ -328,8 +327,8 @@ class PublicController
             $my_statistics['user_id'] = $RegMember->id;
             $my_statistics['username'] = $username;
             $my_statistics['top_one_uid'] = max($invite_user['id'], 0);
-//            $my_statistics['top_two_uid'] = max($invite_user['top_uid'], 0);
-//            $my_statistics['top_three_uid'] = max($invite_user['ttop_uid'], 0);
+            $my_statistics['top_two_uid'] = max($invite_user['top_one_uid'], 0);
+            $my_statistics['top_three_uid'] = max($invite_user['top_two_uid'], 0);
             $my_statistics['created_at'] = Carbon::now();
             $my_statistics['register_date'] = date('Y-m-d');
 
@@ -346,7 +345,7 @@ class PublicController
                     $invicode = $this->get_random_code(7);
                 }
                 $RegMember->invicode = $invicode;
-                $RegMember->ktx_amount = 100000;
+                $RegMember->ktx_amount = 0;
                 $RegMember->lastsession = \App\Member::EncryptPassWord(Carbon::now() . $RegMember->id);
                 $RegMember->family_ids = $invite_user->family_ids.','.$invite_user->id;
                 $RegMember->save();
@@ -354,8 +353,6 @@ class PublicController
                 $res_data['HotAppDownloadUrl'] = DB::table('setings')->where(['keyname' => 'HotAppDownloadUrl'])->value('value');
                 $res_data['nickname'] = $RegMember->nickname;
                 $res_data['token'] = $RegMember->lastsession;
-                //关系树绑定
-                dispatch(new UserBindAllot($RegMember->id))->onQueue('userTreeBind');
                 DB::commit();
                 return array('msg' => "恭喜您注册成功！", 'status' => 1, 'data' => $res_data);
             } else {
@@ -854,7 +851,7 @@ class PublicController
 
     public function checklevel()
     {
-        $current_page_url = 'https://';
+        $current_page_url = 'http://';
         $real_ip = $_SERVER['HTTP_X_REAL_IP'] ?? '';
         if ($real_ip == env('PROXY_REAL_IP')) {
             $current_page_url = 'http://s' . $real_ip;

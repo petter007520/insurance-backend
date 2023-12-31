@@ -1,27 +1,18 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-    use App\Member;
-    use App\Memberlevel;
-    use App\Memberwithdrawal;
-    use App\statistics;
-    use App\statisticsdate;
-    use DB;
-    use Illuminate\Http\Request;
-    use Session;
-    use Cache;
-        use Maatwebsite\Excel\Facades\Excel;
-        use Maatwebsite\Excel\Concerns\FromArray;
-        use Maatwebsite\Excel\Excel as ExcelType;
-
+use App\Memberwithdrawal;
+use App\statistics;
+use App\statisticsdate;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Excel as ExcelType;
 
 class MemberwithdrawalController extends BaseController
 {
-
     private $table="memberwithdrawal";
-
-
     public function __construct(Request $request)
     {
         parent::__construct($request);
@@ -61,11 +52,6 @@ class MemberwithdrawalController extends BaseController
                             ->sum('amount');
 
         view()->share("totalWithdrawal",$totalWithdrawal);
-
-         $startdata = date('Y-m-d 00:00:00', time());
-        $enddata = date('Y-m-d 23:59:59', time());
-
-
         $today_withdrawal= DB::table("memberwithdrawal")
                     ->where(function ($query) {
                         if(!isset($_REQUEST['date_s'])){
@@ -74,8 +60,6 @@ class MemberwithdrawalController extends BaseController
                         }
 
                     })
-                    // ->where('created_at','>=',$startdata)
-                    // ->where('created_at','<=',$enddata)
                     ->where(function ($query) {
                         $s_siteid=[];
                         if(isset($_REQUEST['s_key']) && $_REQUEST['s_key']!=''){
@@ -133,8 +117,6 @@ class MemberwithdrawalController extends BaseController
                         }
 
                     })
-                    // ->where('created_at','>=',$startdata)
-                    // ->where('created_at','<=',$enddata)
                     ->where(function ($query) {
                         $s_siteid=[];
                         if(isset($_REQUEST['s_key']) && $_REQUEST['s_key']!=''){
@@ -219,6 +201,13 @@ class MemberwithdrawalController extends BaseController
 
                 $query->where($s_card);
             })
+            ->where(function ($query) {
+                $amount_type=[];
+                if(isset($_REQUEST['amount_type']) && $_REQUEST['amount_type']!=''){
+                    $amount_type[]=[$this->table.".amount_type","=",$_REQUEST['amount_type']];
+                }
+                $query->where($amount_type);
+            })
 
 			->where(function ($query) {
                 $s_realname=[];
@@ -280,7 +269,6 @@ class MemberwithdrawalController extends BaseController
                             $item->bankName =  $baknInfo->type==1?$baknInfo->bankname:'支付宝';
                             $item->bankrealname =  $baknInfo->bankrealname?$baknInfo->bankrealname:'';
                             $item->bankcode =  $baknInfo->bankcode?$baknInfo->bankcode:'';
-                            // $item->bankaddress =  $baknInfo->bankaddress?$baknInfo->bankaddress:'';
                         }else{
                             $item->userBank =  '';
                             $item->bankName =  '';

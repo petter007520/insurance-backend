@@ -1,21 +1,15 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Bigtree;
-use App\Channel;
+use App\Category;
+use App\ClaimsOrder;
 use App\Http\Controllers\Controller;
-use App\Jobs\CollisionReward;
-use App\Jobs\SendEmail;
-use App\Jobs\UserBindAllot;
 use App\Member;
-use App\Membercurrencys;
 use App\Memberlevel;
 use App\Membermsg;
 use App\Memberphone;
 use App\membersubsidy;
-use App\Memberticheng;
-use App\Order;
 use App\Product;
 use App\Productbuy;
 use App\TreeProduct;
@@ -26,7 +20,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Log as LogLog;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use Session;
@@ -107,230 +100,29 @@ class UserController extends Controller
     /***会员中心***/
     public function index(Request $request)
     {
-        $data['total_amount'] = $this->Member->ktx_amount; //总资产
-        $data['balance'] = number_format($this->Member->collision_amount - $this->Member->collision_amount_finsh,2);//剩余出局额度
-        $data['hold'] = DB::table('productbuy')->where(['userid'=>$this->Member->id,'status'=>1])->value('amount');
-        $data['total_achievement'] = number_format($this->Member->left_amount_show+$this->Member->right_amount_show, '2');//左右区业绩
-        $data['left_achievement'] = $this->Member->left_amount_show;//左区业绩
-        $data['right_achievement'] = $this->Member->right_amount_show;//右区业绩
-        $data['level'] = $this->Member->level;//右区业绩
-        $data['type'] = $this->Member->type;//账号类型
-        $main = [];
-        $left = [];
-        $right = [];
-        $user_id = 0;
-        //主账号登录
-        if($this->Member->type == 0){
-            $user_id = $this->Member->id;
-           $main = ['id'=>$this->Member->id,'username'=>$this->Member->username,'status'=>$this->Member->status,'region'=>$this->Member->region];
-           $left = DB::table('member')->where(['type'=>1,'pid'=>$this->Member->id,'region'=>1])->first(['id','username','status','region']);
-           $right = DB::table('member')->where(['type'=>1,'pid'=>$this->Member->id,'region'=>2])->first(['id','username','status','region']);
-        }
-        //左区子账号登录
-        if($this->Member->type == 1 && $this->Member->region==1){
-            $user_id = $this->Member->pid;
-            $main = DB::table('member')->where(['id'=>$user_id])->first(['id','username','status','region']);
-//            $left = ['id'=>$this->Member->id,'username'=>$this->Member->username,'status'=>$this->Member->status,'region'=>$this->Member->region];
-            $left = ['left_login'=>1];
-            $right = DB::table('member')->where(['type'=>1,'pid'=>$user_id,'region'=>2])->first(['id','username','status','region']);
-        }
-        //右区子账号登录
-        if($this->Member->type == 1 && $this->Member->region==2){
-            $user_id = $this->Member->pid;
-            $main = DB::table('member')->where(['id'=>$user_id])->first(['id','username','status','region']);
-            $left = DB::table('member')->where(['type'=>1,'pid'=>$user_id,'region'=>1])->first(['id','username','status','region']);
-//            $right = ['id'=>$this->Member->id,'username'=>$this->Member->username,'status'=>$this->Member->status,'region'=>$this->Member->region];
-            $right = ['right_login'=>1];
-        }
-        //主账户
-        $data['child']['main'] = $main;
-        //子账号
-        //左区
-        $data['child']['left'] = $left;
-        //右区
-        $data['child']['right'] = $right;
+        $data['total_amount'] = number_format($this->Member->ktx_amount+$this->Member->health_ktx_amount,2);
+        $data['balance'] = $this->Member->ktx_amount; //总资产
+        $data['health_ktx'] = $this->Member->health_ktx_amount; //总资产
+        //累计收益
+        $data['income_all'] = DB::table('moneylog')->where(['moneylog_userid'=>$this->Member->id])
+            ->whereIn('moneylog_type',['直推返佣','静态收益'])->sum('moneylog_money');
         $member_identity = DB::table("memberidentity")
             ->select('status')
-            ->where(['userid' => $user_id])->first();
+            ->where(['userid' => $this->Member->id])->first();
+        $data['user'] = [
+            'username'=> $this->Member->username,
+            'real_name' =>!empty($this->Member->realname)?$this->Member->realname:$this->Member->nickname
+        ];
         if ($member_identity) {//-1:未认证  0：审核中   1：已认证
             $data['real_status'] = $member_identity->status;
         } else {
             $data['real_status'] = -1;
         }
-        $date = date('Y-m-d');
-        $dayTime = [$date.' 00:00:00',$date.' 23:59:59'];
-        //资产
-        $data['income_day'] = DB::table('moneylog')->where(['moneylog_userid'=>$this->Member->id])
-            ->whereIn('moneylog_type',['直推返佣','对碰奖励','星级奖励','股东奖励','静态收益'])
-            ->whereBetween('created_at',$dayTime)->sum('moneylog_money');
-        $data['income_all'] = DB::table('moneylog')->where(['moneylog_userid'=>$this->Member->id])
-            ->whereIn('moneylog_type',['直推返佣','对碰奖励','星级奖励','股东奖励','静态收益'])->sum('moneylog_money');
+        $data['withdraw_amount'] = DB::table('memberwithdrawal')->where(['userid'=>$this->Member->id,'status'=>1])->sum('amount');
+        $data['freeze_amount'] = $this->Member->amount;
+        $data['income_order'] = Productbuy::where(['userid'=>$this->Member->id,'status'=>2])->count();
+        $data['protect_order'] = Productbuy::where(['userid'=>$this->Member->id,'status'=>2,'claims_status'=>0])->count();
         return response()->json(['status' => 1, 'data' => $data]);
-    }
-
-    /**
-     * 子账户开通
-     * @param Request $request
-     * @return array|\Illuminate\Http\JsonResponse
-     */
-    public function registerChild(Request $request){
-        $user_id = $this->Member->id;
-        $password = $request->post('password','');
-        $pay_password = $request->post('pay_password','');
-        $area = $request->post('area',0);
-        $platform = $request->header('platform','H5');//注册来源
-        if(empty($password) || empty($pay_password) || empty($area)){
-            return response()->json(['status' => 0, 'msg' => '必填项为空']);
-        }
-        $auth = DB::table("memberidentity")->select('status')->where(['userid' => $this->Member->id])->first();
-        if(!$auth || $auth->status !== 1){
-            return response()->json(['status' => 0, 'msg' => '主账户必须完成实名认证']);
-        }
-        $child = DB::table('member')->where(['pid'=>$user_id])->get();
-        if($child){
-            $has_area = false;
-            foreach($child as $val){
-                if($val->region == $area){
-                    $has_area = true;
-                }
-            }
-            if($has_area){
-                return response()->json(['status' => 0, 'msg' => '您在当前分区已有子账号']);
-            }
-        }
-        $username = '';
-        switch (count($child)){
-            case 0:
-                $username = $this->Member->username.'@1';
-                break;
-            case 1:
-                $username = $this->Member->username.'@2';
-                break;
-        }
-        if(empty($username)){
-            return response()->json(['status' => 0, 'msg' => '未分配到子账户，请联系客服']);
-        }
-        $RegMember = new Member();
-        DB::beginTransaction();
-        try {
-            $now_date = date('Y-m-d');
-            $RegMember->username = $username;
-            $RegMember->nickname = $this->generateNickname();
-            $RegMember->password = \App\Member::EncryptPassWord($password);
-            $RegMember->paypwd = \App\Member::EncryptPassWord($pay_password);
-            $RegMember->mobile = \App\Member::EncryptPassWord($this->Member->username);
-            $RegMember->pid = $this->Member->id;//主账户ID
-            $RegMember->type = 1;//账户类型 0-主账户；1-子账户
-            $RegMember->inviter = $this->Member->invicode;
-            $RegMember->invite_uid = $this->Member->id;
-            $RegMember->picImg = 20;
-            $RegMember->gender = 1;
-            $RegMember->ip =
-            $RegMember->reg_from = $platform;
-            $RegMember->amount = 0;
-            $RegMember->created_date = $now_date;
-            $RegMember->region = $area;
-            $RegMember->save();
-
-            //添加统计表
-            $my_statistics['user_id'] = $RegMember->id;
-            $my_statistics['username'] = $username;
-            $my_statistics['top_one_uid'] = $this->Member->id;
-            $my_statistics['created_at'] = Carbon::now();
-            $my_statistics['register_date'] = date('Y-m-d');
-            DB::table('statistics')->insert($my_statistics);
-
-            //后台统计
-            DB::table('statistics_sys')->where('id', 1)->increment('user_num', 1);
-            //统计表end
-
-            if ($RegMember) {
-                //获取自增ID，用以插入用户的推荐码
-                $invicode = $this->get_random_code(7);
-                while (DB::table('member')->where('invicode', $invicode)->first()) {
-                    $invicode = $this->get_random_code(7);
-                }
-                $RegMember->invicode = $invicode;
-                $RegMember->family_ids = $this->Member->family_ids.','.$this->Member->id;
-                $RegMember->save();
-                //关系树绑定
-                dispatch(new UserBindAllot($RegMember->id))->onQueue('userTreeBind');
-                DB::commit();
-                return array('msg' => "子账号开通成功", 'status' => 1, 'data' => '');
-            } else {
-                DB::rollBack();
-                return array('msg' => "子账号开通失败", 'status' => 0);
-            }
-        } catch (\Exception $exception) {
-            LogLog::channel('reg')->alert($exception->getMessage());
-            DB::rollBack();
-            return ['status' => 0, 'msg' => '提交失败，请重试'];
-        }
-    }
-
-    public function changeAccount(Request $request){
-        $username = $request->post('username','');
-        if(empty($username)){
-            return response()->json(['status' => 0,'msg'=>'切换用户名必须']);
-        }
-        DB::beginTransaction();
-        try {
-            $Member = Member::where(['username'=>$username,'state'=>1])->first();
-            if(!$Member){
-                /**登录日志**/
-                $data['userid'] = $Member->id;
-                $data['username'] = $Member->username;
-                $data['memo'] = "帐号禁用中";
-                $data['status'] = 0;
-                $data['ip'] = $request->getClientIp();
-                $data['created_at'] = $data['updated_at'] = Carbon::now();
-                DB::table('memberlogs')->insert($data);
-                return response()->json(['status' => 0,'msg'=>'账户不存在或已被禁用']);
-            }
-            //登录
-            $request->session()->put('UserId', $Member->id, 120);
-            $request->session()->put('UserName', $Member->username, 120);
-            $request->session()->put('Member', $Member, 120);
-            if ($request->is_red != 1) {
-                $Member->lastsession = \App\Member::EncryptPassWord(Carbon::now() . $Member->id);
-            }
-            $Member->logintime = Carbon::now();
-            $today_date = date('Y-m-d 00:00:00', time());
-            $yesterday_date = date('Y-m-d 00:00:00', time() - 86400);
-            $login_yesterday = DB::table('memberlogs')
-                ->where(['userid' => $Member->id])
-                ->where('status', '=', 1)
-                ->whereBetween('created_at', [$yesterday_date, $today_date])
-                ->first();
-            $login_today = DB::table('memberlogs')
-                ->where(['userid' => $Member->id])
-                ->where('status', '=', 1)
-                ->where('created_at', '>', $today_date)
-                ->first();
-            if (!$login_today) {
-                if ($login_yesterday) {
-                    $Member->login_times = $Member->login_times + 1;
-                } else {
-                    $Member->login_times = 1;
-                }
-            }
-            $Member->save();
-            /**登录日志**/
-            $data['userid'] = $Member->id;
-            $data['username'] = $Member->username;
-            $data['memo'] = "登录成功";
-            $data['status'] = 1;
-            $data['ip'] = $request->getClientIp();
-            $data['created_at'] = $data['updated_at'] = Carbon::now();
-            DB::table('memberlogs')->insert($data);
-            $res_data['token'] = $Member->lastsession;
-            DB::commit();
-            return response()->json(["status" => 1, "msg" => "登录成功", "data" => $res_data]);
-        } catch (\Exception $exception) {
-            LogLog::channel('reg')->alert('login:' . $exception->getMessage());
-            DB::rollBack();
-            return ['status' => 0, 'msg' => '提交失败，请重试'];
-        }
     }
 
     private function generateNickname(): string
@@ -342,6 +134,11 @@ class UserController extends Controller
             $str .= chr((mt_rand(0xB0,0xD0))).chr((mt_rand(0xA1, 0xF0)));
         }
         return iconv('GB2312','UTF-8',$str);
+    }
+
+    public function question(){
+        $list = DB::table('question')->where(['status'=>1])->orderBy('sort','desc')->orderBy('id','asc')->get(['title','content']);
+        return response()->json(['status' => 1,'msg'=>'ok','data' => $list]);
     }
 
     /**
@@ -365,6 +162,86 @@ class UserController extends Controller
             'bank'     => $bank_card
         ];
         return response()->json(['status' => 1,'msg'=>'ok','data' => $userData]);
+    }
+
+    public function apply_health(Request $request){
+        $reason = $request->post('reason','');
+        $name = $request->post('name','');
+        $age = $request->post('age',0);
+        $card_no = $request->post('card_no','');
+        $mobile = $request->post('mobile','');
+        $card_up = $request->post('card_img_down','');
+        $card_down = $request->post('card_img_up','');
+        $amount = $request->post('amount',0);
+        $hospital_name = $request->post('hospital_name','');
+        $hospital_address = $request->post('hospital_address','');
+        $hospital_bill_img = $request->post('hospital_bill_img',[]);
+        $medical_certificate_img = $request->post('medical_certificate_img',[]);
+        $hospital_cases_img = $request->post('hospital_cases_img',[]);
+        $hospital_receipt_img = $request->post('hospital_receipt_img',[]);
+        if(empty($reason)){
+            return response()->json(["status" => 0, "msg" => "申请理由必填"]);
+        }
+        if(empty($name)){
+            return response()->json(["status" => 0, "msg" => "申请人姓名必填"]);
+        }
+        if(empty($age) || $age>100){
+            return response()->json(["status" => 0, "msg" => "申请人年龄错误"]);
+        }
+        if(empty($card_no)){
+            return response()->json(["status" => 0, "msg" => "申请人身份证必填"]);
+        }
+        if(empty($mobile)){
+            return response()->json(["status" => 0, "msg" => "申请人手机号必填"]);
+        }
+        if(empty($card_up) || empty($card_down)){
+            return response()->json(["status" => 0, "msg" => "申请人身份证正反面必传"]);
+        }
+        if($amount <=0){
+            return response()->json(["status" => 0, "msg" => "申请金额必须大于0"]);
+        }
+        if($amount > $this->Member->apply_amount){
+            return response()->json(["status" => 0, "msg" => "申请金额最多为".$this->Member->apply_amount]);
+        }
+        if(empty($hospital_name) || empty($hospital_address)){
+            return response()->json(["status" => 0, "msg" => "医院信息必填"]);
+        }
+        if(count($hospital_bill_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医院发票最少上传一张"]);
+        }
+        if(count($medical_certificate_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医保报销最少上传一张"]);
+        }
+        if(count($hospital_cases_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医院病例最少上传一张"]);
+        }
+        $data = [
+            'user_id'   =>$this->Member->id,
+            'username'  =>$this->Member->username,
+            'order_sn'  =>'JKJ' . date('YmdHis') . $this->get_random_code(7),
+            'reason'    =>$reason,
+            'name'      =>$name,
+            'age'      =>$age,
+            'card_no'   =>$card_no,
+            'mobile'    =>$mobile,
+            'card_up'    =>$card_up,
+            'card_down'  =>$card_down,
+            'amount'            =>$amount,
+            'hospital_name'     =>$hospital_name,
+            'hospital_address'     =>$hospital_address,
+            'hospital_bill_img'     =>json_encode($hospital_bill_img),
+            'medical_certificate_img'     =>json_encode($medical_certificate_img),
+            'hospital_cases_img'     =>json_encode($hospital_cases_img),
+            'hospital_receipt_img'     =>json_encode($hospital_receipt_img),
+            'status'     => 0,
+            'created_at'     => Carbon::now(),
+        ];
+        $res = DB::table('health_expense')->insert($data);
+        if($res){
+            DB::table('member')->where(['id' => $this->Member->id])->decrement('apply_amount',$amount);
+            return ['status' => 1, 'msg' => '提交成功'];
+        }
+        return ['status' => 0, 'msg' => '申请失败，请稍后再试'];
     }
 
     /**
@@ -417,16 +294,6 @@ class UserController extends Controller
         $id = $request->get('id','');
         DB::table("travellog")->where(['userid'=>$UserId,'id'=>$id])->update(['is_read'=>1]);
         return response()->json(['status' => 1, 'msg' =>'ok','data'=>'']);
-    }
-
-    /****我的资料***/
-    public function my(Request $request)
-    {
-        $UserId = $request->session()->get('UserId');
-        $data = DB::table("member")->find($UserId, ['id', 'nickname', 'picImg', 'gender', 'mobile']);
-        $data->mobile = \App\Member::DecryptPassWord($data->mobile);
-        $data->version = '1.0.1';
-        return response()->json(['status' => 1, 'data' => $data]);
     }
 
     /***我的资料修改***/
@@ -541,56 +408,26 @@ class UserController extends Controller
     /***会员手机认证***/
     public function mobile(Request $request)
     {
-
         $UserId = $request->session()->get('UserId');
-
         $EditMember = Member::where("id", $UserId)->first();
-
         if ($EditMember) {
-
             $password = \App\Member::DecryptPassWord($EditMember->password);
-
             $mobile = $request->mobile;
-
             $isPhones = Memberphone::IsUpdate($mobile, $UserId);
-
             if ($request->password != $password && $request->password != '') {
                 return response()->json(["status" => 0, "msg" => "密码不正确"]);
             }
-
-            //   if ($request->telcode=='') {
-            //       return response()->json(["status"=>0,"msg"=>"请输入短信验证码"]);
-            //   }
-
             if (strlen($mobile) != 11) {
                 return response()->json(['status' => 0, 'msg' => "您输入的手机位数不对"]);
             }
-
             if ($isPhones) {
                 return response()->json(["status" => 0, "msg" => "该手机号已存在"]);
             }
-
-            // if ($request->telcode!=Cache::get("mobile.code.".$mobile)) {
-            //     return array('msg'=>"你输入的短信验证码错误",'status'=>"1");
-            // }
-            // $check_time = strtotime("-10 minute");
-            //  $sms_code = DB::table('membersms')
-            //      ->where(['mobile'=>$mobile,'sms_status'=>1])
-            //      ->where('create_time','<=',time())
-            //     ->where('create_time','>=',$check_time)
-            //      ->orderBy('create_time','desc')
-            //      ->first();
-            //  if(!$sms_code || $sms_code->code != $request->telcode){
-            //      return array('msg'=>"短信验证码错误，请重新输入",'status'=>"0");
-            //  }
-
             $EditMember->ismobile = 1;
             $EditMember->mobile = \App\Member::EncryptPassWord($request->mobile);
             $EditMember->save();
             return response()->json(["status" => 1, "msg" => "手机绑定成功"]);
-
         }
-
     }
 
     /***会员银行信息***/
@@ -726,7 +563,6 @@ class UserController extends Controller
         for ($i = $begin; $i <= $end; $i++) {
             $strarr[$i] = $re;
         }
-        if ($begin >= $end || $begin >= $last || $end > $last) return false;
         return implode('', $strarr);
     }
 
@@ -753,19 +589,14 @@ class UserController extends Controller
             ->where('create_time', '>=', $check_time)
             ->orderBy('create_time', 'desc')
             ->first();
-        // if($request->telcode != 8597 && (!$sms_code || $sms_code->code != $request->telcode)){
         if (!$sms_code || $sms_code->code != $request->telcode) {
             return response()->json(["status" => 0, "msg" => "短信验证码错误，请重新输入"]);
-
         }
-
-
         if ($request->bankname != '') {
             $data['bankname'] = trim($request->bankname);
         } else {
             return response()->json(["status" => 0, "msg" => "银行卡名称不能为空"]);
         }
-
         if ($request->bankrealname != '') {
             $data['bankrealname'] = trim($request->bankrealname);
         } else {
@@ -777,10 +608,6 @@ class UserController extends Controller
         } else {
             return response()->json(["status" => 0, "msg" => "银行卡号不能为空"]);
         }
-
-        // if($request->bankaddress!=''){
-        //     $data['bankaddress'] = trim($request->bankaddress);
-        // }
         if (!$memberbank_info) {
             $data['created_at'] = Carbon::now();
             $data['userid'] = $UserId;
@@ -790,7 +617,6 @@ class UserController extends Controller
             $data['updated_at'] = Carbon::now();
             $res = DB::table("memberbank")->where(['userid' => $UserId])->update($data);
         }
-
         if ($res) {
             return response()->json(["status" => 1, "msg" => "修改成功", 'data' => $data]);
         } else {
@@ -839,9 +665,7 @@ class UserController extends Controller
     /***收货地址修改***/
     public function addressEdit(Request $request)
     {
-
         $UserId = $request->session()->get('UserId');
-
         $addressId = trim($request->id);
         $EditAddress = DB::table('memberaddress')->where(["id" => $addressId, "userid" => $UserId])->first();
 
@@ -1026,101 +850,71 @@ class UserController extends Controller
     public function myDetail(Request $request)
     {
         $UserId = $this->Member->id;
-        $pageSize = $request->get('pageSize', 99);
-        $type = $request->post('type','');
+        $pageSize = $request->get('pageSize', 10);
+        $type = $request->post('type','withdraw');
         $time = $request->post('time','day');
         switch ($time) {
             case 'day':
                 $date = date('Y-m-d');
                 $time = [$date.' 00:00:00',$date.' 23:59:59'];
                 break;
-            case 'month':
+            case 'all':
                 $start_data = date('Y-m-01 00:00:00',time());
                 $end_data = date('Y-m-t 23:59:59',time());
                 $time = [$start_data,$end_data];
                 break;
         }
-        $data = DB::table("moneylog")
-            ->select('id', 'moneylog_money', 'product_title', 'moneylog_status', 'moneylog_type', 'moneylog_notice', 'bank_id', 'withdrawal_id', 'created_at', 'product_title', 'created_date', 'moneylog_num')
-            ->where('moneylog_userid', $UserId)
-            ->when($type == 'withdraw', function ($query) {
-                $query->where('moneylog_type', 'like', '提款%');
-            })
-            ->when($type == 'recharge', function ($query) {
-                $query->where('moneylog_type', '=', '充值');
-            })
-            ->when($type == 'income', function ($query) {
-                $query->whereIn('moneylog_type', ['直推返佣','对碰奖励','星级奖励','股东奖励','静态收益']);
-
-            })
-            ->when($type == 'consumption', function ($query) {
-                $query->whereIn('moneylog_type', ['参与项目,银行卡付款', '参与项目,余额付款']);
-
-            })
-            ->whereBetween('created_at',$time)
-            ->orderBy("id", "desc")
-            ->paginate($pageSize);
-        //先查6~12月的统计数据
-        foreach ($data as $v) {
-            switch ($v->moneylog_type) {
-                case '参与项目,余额付款':
-                    $v->type = '买入';
-                    $v->type_status = 1;
-                    $v->pay_type = '余额';
-                    break;
-                case '参与项目,银行卡付款':
-                    $v->type = '买入';
-                    $v->type_status = 2;
-                    $v->pay_type = '银行卡';
-                    break;
-                case '静态收益':
-                    $v->type = '收益';
-                    $v->type_status = 3;
-                    break;
-                case '对碰奖励':
-                    $v->type = '对碰奖';
-                    $v->type_status = 4;
-                    break;
-                case '直推返佣':
-                    $result = array();
-                    $v->type = '推荐奖';
-                    $v->type_status = 5;
-                    break;
-                case '提款':
-                    $v->type = '提款失败';
-                    $v->type_status = 6;
-                    if ($v->moneylog_status == '-') {
-                        $v->type = '提款申请';
-                        $v->moneylog_money = '-' . $v->moneylog_money;
-                        $bank = DB::table("memberwithdrawal")
-                            ->select('bankid')
-                            ->where("userid", $UserId)
-                            ->where("id", $v->withdrawal_id)
-                            ->first();
-                        if ($bank) {
-                            $v->bankInfo = DB::table('memberbank')->select('bankname', 'bankrealname', 'bankcode', 'bankaddress', 'type')->where('id', $bank->bankid)->first();
-                        }
-                    }
-                    break;
-                case '提款成功':
-                    $v->type = '提款成功';
-                    $v->type_status = 7;
-                    $bank = DB::table("memberwithdrawal")
-                        ->select('bankid')
-                        ->where("userid", $UserId)
-                        ->where("id", $v->withdrawal_id)
-                        ->first();
-                    if ($bank) {
-                        $v->bankInfo = DB::table('memberbank')->select('bankname', 'bankrealname', 'bankcode', 'bankaddress', 'type')->where('id', $bank->bankid)->first();
-                    }
-                    break;
-                case '充值':
-                    $v->type = '充值';
-                    $v->type_status = 8;
-                default:
-            }
+        if($type == 'withdraw'){
+            $data = DB::table('memberwithdrawal')
+                ->select('id','title','withdraw_sn','amount','status','created_date','created_at')
+                ->where('userid', $UserId)
+                ->orderBy("created_date", "desc")
+                ->orderBy("id", "desc")
+                ->paginate($pageSize);
+        }else{
+            $data = DB::table("moneylog")
+                ->select('id', 'moneylog_money', 'product_title', 'moneylog_status', 'moneylog_type', 'moneylog_notice', 'bank_id', 'withdrawal_id', 'created_at', 'product_title', 'created_date', 'moneylog_num')
+                ->where('moneylog_userid', $UserId)
+                ->when($type == 'recharge', function ($query) {
+                    $query->where('moneylog_type', '=', '充值');
+                })
+                ->when($type == 'income', function ($query) {
+                    $query->whereIn('moneylog_type', ['直推返佣','静态收益','购买产品,余额付款','购买产品,银联付款', '购买产品,线上支付']);
+                })
+                ->when($type == 'commission', function ($query) {
+                    $query->whereIn('moneylog_type', ['直推返佣','静态收益','赠送余额可提现']);
+                })
+//            ->whereBetween('created_at',$time)
+                ->orderBy("created_date", "desc")
+                ->orderBy("id", "desc")
+                ->paginate($pageSize);
         }
-        return response()->json(['status' => 1, 'data' => $data]);
+        //先查6~12月的统计数据
+        $year = date('Y');
+        $month = date('m');
+        $list = [];
+        for($i = $month; $i >0 ; $i--){
+            $mon = strlen($i)<2?'0'.$i:$i;
+            $time = $year.'-'.$mon;
+            $logList = [];
+            foreach ($data as $v) {
+                if(date('Y-m',strtotime($v->created_at))==$time){
+                    $logList[]=$v;
+                }
+            }
+            if(count($logList)>0){
+                $list[]=[
+                    'date'=>$year.'年'.$i.'月',
+                    'list'=>$logList
+                ];
+            }
+            unset($logList);
+        }
+        $total_income = DB::table("moneylog")->whereIn('moneylog_type',['直推返佣','静态收益'])->sum('moneylog_money');
+        $date = date('Y-m-d');
+        $new_time = [$date.' 00:00:00',$date.' 23:59:59'];
+        $new_income = DB::table("moneylog")->whereIn('moneylog_type',['直推返佣','静态收益'])->whereBetween('created_at',$new_time)->sum('moneylog_money');
+        return response()->json(['status' => 1, 'data' => $list,'total'=>$data->total(),'last_page'=>$data->lastPage(),'income'=>['total_income'=>$total_income, 'new_income'=>$new_income]]);
     }
 
     /****我的明细***/
@@ -1788,110 +1582,169 @@ class UserController extends Controller
      * @return array|\Illuminate\Http\JsonResponse
      */
     public function create_order(Request $request){
-        //支付方式
-        $pay_type = $request->post('payment_type',0);
-        $pay_id = $request->post('payment_id',0);
         //用户ID
         $UserId = $this->Member->id;
         //购买数量
         $num = $request->post('num',1);
         //购买产品ID
         $product_id = $request->post('product_id',0);
+        //被保人
+        $insure_list = $request->post('insure_list',[]);
+        //购买产品
+        $product = DB::table("products")
+            ->where(['id' => $product_id,'status'=>1])
+            ->first();
+        if (!$product) {
+            return response()->json(["status" => 0, "msg" => "产品已下架！"]);
+        }
+        if(count($insure_list)<=0){
+            return response()->json(["status" => 0, "msg" => "被保人最少1个！"]);
+        }
+        if($num<=0){
+            return response()->json(["status" => 0, "msg" => "购买数量最小为1份"]);
+        }
+        $Member = Member::where(['state'=>1])->find($UserId);
+        if(!$Member->is_auth){
+            return response()->json(["status" => 0, "msg" => "请先完成实名认证"]);
+        }
+        $integrals = $product->start_amount * $num;
+        DB::beginTransaction();
+        try {
+            $ip = $request->getClientIp();
+            //判断下一次领取时间
+            $useritem_time = \App\Productbuy::DateAdd("d", 1, date('Y-m-d 0:0:0', time()));
+            $order_sn = 'PA' . date('YmdHis') . $this->get_random_code(8);
+            $order_data = [
+                'userid' => $Member->id,
+                'username' => $Member->username,
+                'productid' => $product->id,
+                'category_id' => $product->category_id,
+                'amount' => $integrals,
+                'ip' => $ip,
+                'insure_name'=>$insure_list[0]['name'],
+                'insure_card_no'=>$insure_list[0]['card_no'],
+                'useritem_time' => $useritem_time,
+                'status' => 0,
+                'payimg' =>  '',
+                'pay_type' => '',
+                'num' => $num,
+                'unit_price' => $product->start_amount,//购买时单价
+                'order' => $order_sn,
+                'created_at' => Carbon::now(),
+                'created_date' => date('Y-m-d')
+            ];
+            $res = DB::table('productbuy')->insertGetId($order_data);
+            if ($res <= 0) {
+                DB::rollBack();
+                return response()->json(["status" => 0, "msg" => "订单创建失败"]);
+            }
+            DB::commit();
+            return response()->json(["status" => 1, "msg" => "订单创建成功",'data'=>['order_sn'=>$order_sn]]);
+        }catch (\Exception $e){
+            Log::channel('buy')->alert($e);
+            DB::rollBack();
+            return ['status' => 0, 'msg' => '订单创建异常'];
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function order_detail(Request $request){
+        $order_sn = $request->get('order_sn','');
+        if(empty($order_sn)){
+            return response()->json(["status" => 0, "msg" => "订单号必须"]);
+        }
+        $order = Productbuy::where(['order'=>$order_sn,'userid'=>$this->Member->id,'status'=>0])->first(['id','amount']);
+        if(!$order){
+            return response()->json(["status" => 0, "msg" => "待支付订单不存在"]);
+        }
+        return response()->json(["status" => 1, "msg" => "支付订单",'data'=>$order]);
+    }
+
+    /**
+     * 订单支付
+     * @param Request $request
+     * @return array|\Illuminate\Http\JsonResponse
+     */
+    public function order_pay(Request $request){
+        //支付方式
+        $pay_type = $request->post('payment_type',0);
+        $pay_id = $request->post('payment_id',0);
+        $order_sn = $request->post('order_sn','');
+        //用户ID
+        $UserId = $this->Member->id;
         //线下购买付款凭证
         $pay_img = $request->post('payment_certificate','');
         $pay_pwd = $request->post('password','');
-        if($this->Member->state != 1){
-            return response()->json(["status" => 0, "msg" => "会员关系树未处理完成，请售后购买财富计划！"]);
-        }
         if (!in_array($pay_type,[1,2,3,4,5])) {
             return response()->json(["status" => 0, "msg" => "付款方式不支持"]);
         }
         if($pay_type == 2 && empty($pay_img)){
             return response()->json(["status" => 0, "msg" => "付款凭证不能为空！！"]);
         }
+        $order = Productbuy::where(['order'=>$order_sn,'userid'=>$UserId,'status'=>0])->first();
+        if(!$order){
+            return response()->json(["status" => 0, "msg" => "该订单无法支付"]);
+        }
         //购买产品
         $product = DB::table("products")
-            ->where(['id' => $product_id,'status'=>1])
+            ->where(['id' => $order->productid,'status'=>1])
             ->first();
         if (!$product) {
-            return response()->json(["status" => 0, "msg" => "财富计划不存在或已下架！"]);
+            return response()->json(["status" => 0, "msg" => "产品已下架！"]);
         }
         $Member = Member::where(['state'=>1])->find($UserId);
-//        //判断用户是否可以购买
-//        if($Member->status == 1){
-//            return response()->json(["status" => 0, "msg" => "您还未出局，无法再次购买"]);
-//        }
-        $type_title = '';
-        $order_type = 1;
-        $before_order_id = 0;
-        $real_amount = $integrals = $product->price * $num;
-        //判断用户是否可以购买
-        $user_buy_product = DB::table('productbuy')->where(['userid'=>$UserId,'status' =>1])->first(['id','amount','level']);
-        if($this->Member->status == 1 && $user_buy_product){
-            //最高等级财富计划
-            $levelTop = DB::table('products')->where(['status' => 1])->orderBy('level','desc')->first(['id','price','level']);
-            if($levelTop->level ==  $user_buy_product->level){
-                return response()->json(["status"=>0,"msg"=>"已购买最高等级财富计划，请出局后再购买"]);
-            }
-            if($product->price <= $user_buy_product->amount || $product->level <= $user_buy_product->level){
-                return response()->json(["status"=>0,"msg"=>"该等级财富计划已购买，请选择更高等级财富计划"]);
-            }
-            if($product->level > $user_buy_product->level){
-                $real_amount = $product->price - $user_buy_product->amount;
-                $type_title = '(升级)';
-                $order_type = 2;
-                $before_order_id = $user_buy_product->id;
-            }
-        }
         DB::beginTransaction();
         try {
             $ip = $request->getClientIp();
-            $notice = "参与财富(" . $product->title . ")".$type_title;
+            $notice = "购买(" . $product->title . ")";
             //余额支付
             if($pay_type == 1){
                 if($pay_pwd != \App\Member::DecryptPassWord($Member->paypwd)){
                     return response()->json(["status" => 0, "msg" => "支付密码错误！"]);
                 }
-                if ($real_amount > $Member->ktx_amount) {
+                if ($order->amount > $Member->ktx_amount) {
                     return response()->json(["status" => 0, "msg" => "余额不足,请充值,当前余额：" . $Member->ktx_amount]);
                 }
                 $Member = Member::where(['state'=>1])->lockForUpdate()->find($UserId);
-                if (($Member->ktx_amount - $real_amount) < 0 ) {
+                if (($Member->ktx_amount - $order->amount) < 0 ) {
                     DB::rollBack();
                     return response()->json(["status" => 0, "msg" => "余额不足,请充值"]);
                 }
-                $yuanamount = $Member->ktx_amount;
-                $Member->decrement('ktx_amount', $real_amount);
+                $before_amount = $Member->ktx_amount;
+                $Member->decrement('ktx_amount', $order->amount);
                 $log = [
                     "userid" => $Member->id,
                     "username" => $Member->username,
-                    "money" => $real_amount,
+                    "money" => $order->amount,
                     "notice" => $notice,
-                    "type" => "购买财富,余额付款",
+                    "type" => "购买产品,余额付款",
                     "status" => "-",
-                    "yuanamount" => $yuanamount,
+                    "yuanamount" => $before_amount,
                     "houamount" => $Member->ktx_amount,
                     "ip" => $ip,
                     "category_id" => $product->category_id,
                     "product_id" => $product->id,
                     "product_title" => $product->title,
-                    'num' => $num,
+                    'num' => $order->num,
                     'moneylog_type_id' => '1',
                 ];
                 \App\Moneylog::AddLog($log);
                 $msg = [
                     "userid" => $Member->id,
                     "username" => $Member->username,
-                    "title" => "购买财富",
-                    "content" => "成功购买财富(" . $product->title . ")",
+                    "title" => "购买产品",
+                    "content" => "成功购买产品(" . $product->title . ")",
                     "from_name" => "系统通知",
-                    "types" => "购买财富",
+                    "types" => "购买产品",
                 ];
                 \App\Membermsg::Send($msg);
                 //增送积分(有需求后续加)
-                if($integrals > 0 && $Member->id < 0){
+                if($order->amount > 0 && $Member->id < 0){
                     $user_id = $Member->id;
-                    $score = $integrals;
+                    $score = $order->amount;
                     $type = 1;
                     $source_type = 5;
                     $act = APP::make(\App\Http\Controllers\Api\ActController::class);
@@ -1900,51 +1753,25 @@ class UserController extends Controller
             }
             // 创建订单
             $payment_info = DB::table('payment')->where(['id'=>$pay_id])->first(['bankcode','bank_type']);
-
-            //判断下一次领取时间
-            $useritem_time = \App\Productbuy::DateAdd("d", 1, date('Y-m-d 0:0:0', time()));
-            $order_data = [
-                'userid' => $Member->id,
-                'username' => $Member->username,
-                'level' => $product->level,
-                'productid' => $product->id,
-                'category_id' => $product->category_id,
-                'type' => $order_type,
-                'before_order_id' => $before_order_id,
-                'amount' => $integrals,
-                'real_amount' => $real_amount,
-                'ip' => $ip,
-                'useritem_time' => $useritem_time,
-                'status' => $pay_type == 1 ? 1 : 2,//1-余额支付直接标记为收益中，其他支付标记为待审核
-                'payimg' =>  in_array($pay_type,[2,5]) ? $pay_img : '',
-                'pay_type' => $pay_type,
-                'num' => $num,
-                'unit_price' => $product->price,//购买时单价
-                'usdt_remark' =>  $pay_type == 5 ? '收款USDT'.round($real_amount/$payment_info->bank_type,1).'|收款地址：'.$payment_info->bankcode.'|汇率：'.$payment_info->bank_type:'',//USDT支付备注
-                'order' => 'WX' . date('YmdHis') . $this->get_random_code(7),
-                'created_at' => Carbon::now(),
-                'created_date' => date('Y-m-d')
-            ];
-            $res = DB::table('productbuy')->insertGetId($order_data);
-            if ($res <= 0) {
-                return response()->json(["status" => 0, "msg" => "购买失败，请重新操作"]);
-            }
             //余额支付完成
             if ($pay_type == 1) {
-                $ret = (new PayOrderController())->third_pay_finish_payment($res);
-               if($ret['status'] == 0){
-                   DB::rollBack();
-                   Log::channel('pay')->warning('支付未完成-'.$ret['msg']);
-                   return ['status' => 0, 'msg' => '提交失败，请重试1'];
-               }
-            }
-            DB::commit();
-            //USDT | 银联汇款支付
-            if(in_array($pay_type,[1,2,5])){
+                $ret = (new PayOrderController())->third_pay_finish_payment($order->id);
+                if($ret['status'] == 1){
+                    $order->pay_type = 1;
+                    $order->status = 2;
+                    $order->save();
+                }else{
+                    DB::rollBack();
+                    Log::channel('pay')->warning('支付未完成-'.$ret['msg']);
+                    return ['status' => 0, 'msg' => $ret['msg']];
+                }
+                DB::commit();
                 return response()->json(["status" => 1, "msg" => "购买成功"]);
             }
             //线上支付
-            return (new PaymentController())->thirdToPay($res);
+//            return (new PaymentController())->thirdToPay($order->id);
+            DB::rollBack();
+            return response()->json(["status" => 0, "msg" => "支付失败"]);
         }catch (\Exception $e){
             Log::channel('buy')->alert($e);
             DB::rollBack();
@@ -1952,6 +1779,141 @@ class UserController extends Controller
         }
     }
 
+    public function order_list(Request $request){
+        $page = $request->get('page',1);
+        $pageSize = $request->get('pageSize',10);
+        $list = Productbuy::where(['userid'=>$this->Member->id])->with(['product'=>function($query){
+            $query->select('id','title','pic','insured_amount','tag_name','describe','income_rate');
+        }])->paginate($pageSize);
+        return response()->json(["status"=>1,"msg"=>"订单列表",'data'=>$list]);
+    }
+
+    /**
+     * 用户订单详情
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function userOrderDetail(Request $request){
+        $order_id = $request->get('order_id',0);
+        $order = Productbuy::where(['id'=>$order_id,'userid'=>$this->Member->id,'status'=>2,'claims_status'=>0])->first(['id','insure_name','insure_card_no']);
+        if(!$order){
+            return response()->json(["status" => 0, "msg" => "该订单无法报销"]);
+        }
+        $order->insure_name = $this->dataDesensitization($order->insure_name,0,-1);
+        $order->insure_card_no = $this->dataDesensitization($order->insure_card_no,4,10);
+        return response()->json(["status" => 1, "msg" => "支付订单",'data'=>$order]);
+    }
+
+    /**
+     * 报销
+     * @param Request $request
+     * @return array|\Illuminate\Http\JsonResponse
+     */
+    public function applyClaims(Request $request){
+        $order_id = $request->post('order_id',0);
+        $reason = $request->post('reason','');
+        $mobile = $request->post('mobile','');
+        $card_up = $request->post('card_up','');
+        $card_down = $request->post('card_down','');
+        $amount = $request->post('amount',0);
+        $hospital_name = $request->post('hospital_name','');
+        $hospital_address = $request->post('hospital_address','');
+        $hospital_bill_img = $request->post('hospital_bill_img',[]);
+        $medical_certificate_img = $request->post('medical_certificate_img',[]);
+        $hospital_cases_img = $request->post('hospital_cases_img',[]);
+        $hospital_receipt_img = $request->post('hospital_receipt_img',[]);
+
+        $order = Productbuy::where(['id'=>$order_id,'status'=>2,'claims_status'=>0])->first();
+        if(!$order){
+            return response()->json(["status" => 0, "msg" => "您没有可报销订单"]);
+        }
+        if(empty($reason)){
+            return response()->json(["status" => 0, "msg" => "报销理由必填"]);
+        }
+        if(empty($mobile)){
+            return response()->json(["status" => 0, "msg" => "受益人手机号必填"]);
+        }
+        if(empty($card_up) || empty($card_down)){
+            return response()->json(["status" => 0, "msg" => "受益人身份证正反面必传"]);
+        }
+        if($amount <=0){
+            return response()->json(["status" => 0, "msg" => "报销金额必须大于0"]);
+        }
+        if(empty($hospital_name) || empty($hospital_address)){
+            return response()->json(["status" => 0, "msg" => "医院信息必填"]);
+        }
+        if(count($hospital_bill_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医院发票最少上传一张"]);
+        }
+        if(count($medical_certificate_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医保报销最少上传一张"]);
+        }
+        if(count($hospital_cases_img) <=0){
+            return response()->json(["status" => 0, "msg" => "医院病例最少上传一张"]);
+        }
+        $data = [
+            'user_id'   =>$this->Member->id,
+            'order_id'  =>$order->id,
+            'order_sn'  =>$order->order,
+            'claims_order_sn'=>'LP' . date('YmdHis') . $this->get_random_code(7),
+            'product_title'=> DB::table('products')->where(['id'=>$order->productid])->value('title'),
+            'reason'    =>$reason,
+            'insure_name'    =>$order->insure_name,
+            'insure_card_no'    =>$order->insure_card_no,
+            'insure_mobile'     =>$mobile,
+            'insure_card_up'    =>$card_up,
+            'insure_card_down'  =>$card_down,
+            'amount'            =>$amount,
+            'hospital_name'     =>$hospital_name,
+            'hospital_address'     =>$hospital_address,
+            'hospital_bill_img'     =>json_encode($hospital_bill_img),
+            'medical_certificate_img'     =>json_encode($medical_certificate_img),
+            'hospital_cases_img'     =>json_encode($hospital_cases_img),
+            'hospital_receipt_img'     =>json_encode($hospital_receipt_img),
+            'status'     => 0,
+            'created_at'     => Carbon::now(),
+        ];
+        DB::beginTransaction();
+        try {
+            $res = DB::table('claims_order')->insert($data);
+            if($res){
+                $order->claims_status = 1;
+                $order->save();
+                DB::commit();
+                return ['status' => 1, 'msg' => '提交成功'];
+            }
+            return ['status' => 0, 'msg' => '申请失败，请稍后再试'];
+        }catch (\Exception $e){
+            Log::channel('buy')->alert($e->getMessage());
+            DB::rollBack();
+            return ['status' => 0, 'msg' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * 报销订单列表
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function claimsOrder(Request $request){
+        $page = $request->get('page',1);
+        $pageSize = $request->get('pageSize',3);
+        $list = ClaimsOrder::where(['user_id'=>$this->Member->id])->orderBy('created_at','desc')->limit($pageSize)->paginate($page);
+        return response()->json(["status"=>1,"msg"=>"ok", "data"=>$list]);
+    }
+
+    public function getClaimsDetail(Request $request){
+        $id = $request->get('id',0);
+        $order = ClaimsOrder::where(['id'=>$id])->with(['order'=>function($query){
+            $query->select('id','productid','amount','category_id');
+        }])->first();
+        $order->protect_type = Category::where(['id'=>$order->order->category_id])->value('name');
+        $order->user = [
+            'user_id' => $this->Member->id,
+            'real_name' => $this->Member->realname,
+        ];
+        return response()->json(["status"=>1,"msg"=>"ok", "data"=>$order]);
+    }
     /**
      * 财富购买检查
      * @param Request $request
@@ -2011,7 +1973,7 @@ class UserController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function change_pay(Request $request){
-        $list = DB::table('payment')->select('id','pay_name','pay_pic','bankname','bankrealname','bankcode','is_default','pay_type','type','bank_type')->where(['enabled'=>1])->get();
+        $list = DB::table('payment')->select('id','pay_name','pay_pic','bankname','bankrealname','bankcode','is_default','pay_type','type','bank_type')->where(['enabled'=>1])->orderBy('sort','desc')->get();
         $payment = [];
         $offlineCount = 0;
         $chainCount = 0;
@@ -2026,7 +1988,7 @@ class UserController extends Controller
                 $payment[] = ['id'=>$val->id, 'name'=>$val->pay_name,'icon'=>'/static/images/assets/pay/wechat.png','type'=>$val->type,'pay_type'=>$val->pay_type];
             }
             if ($val->type=='wallet' && $val->pay_type==1){
-                $payment[] = ['id'=>$val->id, 'name'=>$val->pay_name,'icon'=>'/static/images/assets/pay/wallet_icon.jpg','type'=>$val->type,'pay_type'=>$val->pay_type];
+                $payment[] = ['id'=>$val->id, 'name'=>$val->pay_name,'icon'=>'/static/images/assets/pay/wallet_icon.png','type'=>$val->type,'pay_type'=>$val->pay_type];
             }
             if($val->type=='offline' && $val->pay_type==2){
                 ++$offlineCount;
@@ -2048,231 +2010,6 @@ class UserController extends Controller
         return response()->json(["status"=>1,"msg"=>"返回成功！","data"=>['payment'=>$payment,'bank_list'=>$bankList,'tabs'=>$tabs,'chain_list'=>$chainList]]);
     }
 
-    public function huicenter(Request $request)
-    {
-        // return 1;
-        //购买项目
-        $UserId = $request->session()->get('UserId');
-        // $Member = Member::find($UserId);
-        $Member = DB::table("member")->find($UserId);
-        $Memberlevel = DB::table("memberlevel")->find($Member->level);
-        $weight = 0;
-        // $Memberlevel =Memberlevel::find($Member->level);
-        if (!empty($Memberlevel)) {
-            $weight = $Memberlevel->weight;
-        }
-        $lastlevel = DB::table("memberlevel")->where("weight", ">", $weight)->orderBy("weight", "ASC")->first();
-
-        if (!empty($lastlevel)) {
-            $nextlevel = $lastlevel;
-        } else {
-            $nextlevel = $Memberlevel;
-        }
-        return response()->json(["status" => 1, "msg" => "获取成功", 'nextlevel' => $nextlevel, 'Memberlevel' => $Memberlevel, 'Member' => $Member]);
-    }
-
-    //加入货币
-    public function insert_hb($data)
-    {
-        //如果是货币，添加到会员货币表
-        $now_time = Carbon::now();
-        $currencys = new Membercurrencys();
-        $total_num = 0;
-        $userid = $data['userid'];
-        $productid = $data['productid'];
-        $num = $data['num'];
-        $user_currencys_info = $currencys::where(['userid' => $userid, 'productid' => $productid])->orderBy('created_at', 'desc')->first();
-        if ($user_currencys_info) {
-            // $update_currencys['num'] = $user_currencys_info->num + $request->number;
-            // $update_currencys['total_num'] = $user_currencys_info->total_num + $request->number;
-            $update_currencys['updated_at'] = $now_time;
-            $currencys::where(['userid' => $userid, 'productid' => $productid])->increment('num', $num);
-            $currencys::where(['userid' => $userid, 'productid' => $productid])->increment('total_num', $num);
-        } else {
-            $currencys->userid = $userid;
-            $currencys->productid = $productid;
-            $currencys->num = $num;
-            $currencys->total_num = $num;
-            $currencys->created_at = $now_time;
-            $currencys->updated_at = $now_time;
-            $currencys_res = $currencys->save();
-        }
-        return true;
-    }
-
-    public function thirdToMoney(Request $request)
-    {
-
-        $pay_type = $request->pay_type;//付款方式
-        $pay_amount = $request->pay_amount;//付款金额
-        //购买项目
-        $UserId = $request->session()->get('UserId');
-        if ($UserId < 1) {
-            return response()->json(["status" => -1, "msg" => "请先登录！"]);
-        }
-
-        if ($pay_type != 3) {
-            return response()->json(["status" => 0, "msg" => "该支付方式当前不可用"]);
-        }
-        // $checkSM = DB::table("member")->select('realname','card')->where(['id'=>$UserId])->first();
-        // if(empty($checkSM->realname) || empty($checkSM->card)){
-        //     return response()->json(["status"=>0,"msg"=>"请先完成实名后进行购买"]);
-        // }
-        if (!$pay_amount || $pay_amount <= 0) {
-            return response()->json(["status" => 0, "msg" => "参数错误！！"]);
-        }
-        if (!$request->productid || !is_numeric($request->productid)) {
-            return response()->json(["status" => 0, "msg" => "项目不存在或已下架！！"]);
-        }
-        if ($request->number < 1 || !is_numeric($request->number)) {
-            return response()->json(["status" => 0, "msg" => "购买项目数量错误！"]);
-        }
-
-        $product = DB::table("products")
-            ->select('id', 'title', 'category_id', 'qtje', 'isft', 'tzzt', 'hkfs', 'shijian', 'zgje', 'qxdw', 'zsje', 'zsje_type', 'jyrsy', 'qtsl', 'zscp_id')
-            ->where(['id' => $request->productid])
-            ->first();
-
-        if (!$product) {
-            return response()->json(["status" => 0, "msg" => "项目不存在或已下架！"]);
-        }
-
-        if ((int)$request->number < (int)$product->qtsl) {
-            return response()->json(["status" => 0, "msg" => "低于项目最低起投数量"]);
-        }
-
-        $Member = Member::select('id', 'username', 'amount', 'paypwd', 'state', 'realname', 'mobile', 'level')->where('state', 1)->find($UserId);
-
-        $integrals = $product->qtje * $request->number;//用户购买总金额
-
-        $hkfs = trim($product->hkfs);  //还款方式
-        $zhouqi = trim($product->shijian);//周期
-        // if($product->category_id == 12){
-        //     $hkfs = 4;
-        // }
-        //判断项目是否停止
-        if ($product->tzzt != 0) {
-            return response()->json(["status" => 0, "msg" => "该项目已售罄"]);
-        }
-        //判断起投数量
-        if ($product->qtje > $integrals) {
-            return response()->json(["status" => 0, "msg" => "您购买项目起投金额为" . $product->qtje]);
-        }
-        //判断最高投
-        if ((int)$product->zgje !== 0) {
-            if ($integrals > $product->zgje) {
-                return response()->json(["status" => 0, "msg" => "您购买项目最高投入金额为" . $product->zgje]);
-            }
-        }
-        //判断投资是否投过
-        if ($product->isft == 0) {
-            $Productbuy = Productbuy::where("productid", $request->productid)->where("userid", $this->Member->id)->where('status', '<>', 3)->first();
-            if ($Productbuy) {
-                return response()->json(["status" => 0, "msg" => "抱歉，该项目只允许投一次"]);
-            }
-        }
-        //购买金额是否正确
-        if ($integrals != $pay_amount) {
-            return response()->json(["status" => 0, "msg" => "参数错误！"]);
-        }
-
-
-        //判断下一次领取时间
-        $useritem_time2 = \App\Productbuy::DateAdd("d", 1, date('Y-m-d 0:0:0', time()));
-
-        //放回调里
-        $ip = $request->getClientIp();
-        $notice = "加入项目(" . $product->title . ")(-)";
-
-        $log = [
-            "userid" => $this->Member->id,
-            "username" => $this->Member->username,
-            "money" => $integrals,
-            "notice" => $notice,
-            "type" => "加入项目,第三方付款(支付宝)",
-            "status" => "-",
-            "yuanamount" => $Member->amount,
-            "houamount" => $Member->amount,
-            "ip" => $ip,
-            "category_id" => $product->category_id,
-            "product_id" => $product->id,
-            "product_title" => $product->title,
-        ];
-        \App\Moneylog::AddLog($log);
-
-
-        $sendDay_count = $hkfs == 1 ? 1 : $zhouqi;
-        $NewProductbuy = new Productbuy();
-
-        //赠送金额
-        // if($product->zsje_type == 2 ){
-        //     $product->zsje = intval($integrals * (zsje * 0.01));
-        // }
-
-        $have_productbuy = Productbuy::where("productid", $request->productid)->where("userid", $this->Member->id)->first();
-
-        $NewProductbuy->userid = $Member->id;
-        $NewProductbuy->username = $Member->username;
-        $NewProductbuy->level = $Member->level;
-        $NewProductbuy->productid = $request->productid;
-        $NewProductbuy->category_id = $product->category_id;
-        $NewProductbuy->amount = $integrals;
-        $NewProductbuy->ip = $ip;
-        $NewProductbuy->useritem_time = Carbon::now();
-        $NewProductbuy->useritem_time2 = $useritem_time2;
-        $NewProductbuy->sendday_count = $sendDay_count;
-        $NewProductbuy->status = 2;                 //未审核
-        $NewProductbuy->num = $request->number;     //购买数量
-        $NewProductbuy->unit_price = $product->qtje;//购买时单价
-        $NewProductbuy->zsje = $product->zsje;
-        $NewProductbuy->zscp_id = $product->zscp_id ? $product->zscp_id : 0;
-        $NewProductbuy->order = substr((date('YmdHis') . $Member->id . $this->get_random_code(15)), 0, 25);
-        $NewProductbuy->gq_order = 'Y' . $request->productid . ($Member->id + 555);
-
-        $NewProductbuy->pay_type = 3;           //支付宝支付
-        $NewProductbuy->pay_status = 0;
-        // if($product->category_id == 12 ){
-        // $NewProductbuy->gq_order = 'Y'.$this->get_random_code(9);
-        // while(DB::table('productbuy')->where('gq_order',$NewProductbuy->gq_order)->first()){
-        // $NewProductbuy->gq_order = 'Y'.$this->get_random_code(9);
-        // }
-        // }
-        $res = $NewProductbuy->save();
-
-        if (!$res) {
-            return response()->json(["status" => 0, "msg" => "投资失败，请重新操作"]);
-        } else {
-            $data = [
-                'merchantNum' => 'SUNNY',                  //商户号(商户号，由平台提供)
-                'orderNo' => $NewProductbuy->order,               //商户订单号(仅允许字母或数字类型,建议不超过32个字符，不要有中文)
-                'amount' => $NewProductbuy->amount,                          //支付金额(请求的价格(单位：元) 可以0.01元)
-                'notifyUrl' => 'http://kline.kmzgb.com/api/papanr',   //异步通知地址(异步接收支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数。)
-                'returnUrl' => 'https://www.baidu.com/',            //同步通知地址(支付成功后跳转到的地址，不参与签名。)
-                'payType' => 'llzfb',                             //请求支付类型
-                'payFrom' => 'xxx',
-                'ip' => '12.12.12.12',
-            ];
-            //签名【md5(商户号+商户订单号+支付金额+异步通知地址+商户秘钥)】
-            $data['sign'] = md5($data['merchantNum'] . $data['orderNo'] . $data['amount'] . $data['notifyUrl'] . '58f3b702b4621e52cec01df4ece52537');
-            $res = $this->curl('https://api.dnxbpay.com/api/startOrder', $data);
-            // dump($res);
-            $res_arr = json_encode($res, JSON_UNESCAPED_UNICODE);
-            // dump($res_arr);
-            exit();
-            if ($res->code != 200) {
-                Log::channel('pay')->warning($res_arr);
-                return response()->json(["status" => 0, "msg" => $res->msg]);
-            }
-            Log::channel('pay')->info($res_arr);
-            DB::table('productbuy')
-                ->where(['id' => $NewProductbuy->id])
-                ->update(['third_party_order' => $res->data->id]);
-
-            return response()->json(["status" => 1, "msg" => "跳转支付", 'payUrl' => $res->data->payUrl, 'data' => $res]);
-        }
-
-    }
-
     public function curl($url, $data)
     {
         $curl = curl_init();
@@ -2289,7 +2026,6 @@ class UserController extends Controller
 
     public function uploadImg(Request $request)
     {
-
         $file = $request->file('file'); // 获取上传的文件
         $type = $request->type;
         if ($file == null) {
@@ -2320,227 +2056,146 @@ class UserController extends Controller
         return response()->json(["status" => 1, "msg" => "上传凭证成功", "data" => "/uploads/" . $res]);
     }
 
-    public function Memberamount(Request $request)
-    {
-
-        $UserId = $request->session()->get('UserId');
-        $Member = Member::find($UserId);
-        echo $Member->amount;
+    public function my_health(){
+        $total_healthy_out = DB::table('health_expense')->where(['status'=>3])->sum('amount');
+        $total_people = DB::table('health_expense')->where(['status'=>3])->count();
+        $data = [
+            'total_healthy_out'=>number_format($total_healthy_out,2),
+            'total_people'=>$total_people,
+            'healthy_amount'=>number_format($this->Member->health_amount,2),
+            'health_ktx_amount'=>number_format($this->Member->health_ktx_amount,2),
+            'apply_amount'=>$this->Member->apply_amount,
+            'check_status'=>$this->Member->lastqiandao >= Carbon::today()->toDateTimeString() ? 0:1,
+        ];
+        $data['list'] = DB::table('health_expense')->whereIn('status',[1,2,3])
+            ->orderBy('created_at','desc')
+            ->limit(2)->get(['id','name','age','reason','amount','status']);
+        return response()->json(["status" => 1, "msg" => "ok", "data" => $data]);
     }
 
-
-    public function xj_qiandao111(Request $request)
-    {
-
-        $UserId = $request->session()->get('UserId');
-        $EditMember = DB::table("member")->where("id", $UserId)->first();
-        $Member = Member::find($UserId);
-        if ($EditMember) {
-            if ($EditMember->qd_count != 7) {
-
-                if ($EditMember->lastqiandao >= Carbon::today()->toDateTimeString()) {
-                    return response()->json(["status" => 0, "msg" => '今日已经签到过了']);
+    /**
+     * 领取健康金
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function sign_health(Request $request){
+        $member = Member::where(['id'=>$this->Member->id])->first();
+        if($member->lastqiandao >= Carbon::today()->toDateTimeString()){
+            return response()->json(["status" => 0, "msg" => '今日已领取']);
+        }
+        //获取签到配置
+        if(Cache::has('health_rand')){
+            $health_rand = Cache::get('health_rand');
+        }else{
+            $health_rand_set = DB::table('setings')->where('keyname', 'health_rand')->value('value');
+            $health_rand = explode('|',$health_rand_set);
+            Cache::forever('health_rand',$health_rand);
+        }
+        if(Cache::has('health_to_amount')){
+            $health_rate = Cache::get('health_to_amount');
+        }else{
+            $health_rate = DB::table('setings')->where('keyname', 'health_rate')->value('value');
+            Cache::forever('health_to_amount',$health_rate);
+        }
+        if(count($health_rand)==2){
+            $money = random_int($health_rand[0], $health_rand[1]);
+            if($money > 0){
+                //健康金
+                $before_health_amount = $member->health_amount;
+                $member->increment('health_amount', $money);
+                $log = [
+                    "userid" => $member->id,
+                    "username" => $member->username,
+                    "money" => $money,
+                    "notice" => '签到领取健康金',
+                    "type" => "每日签到",
+                    "status" => "+",
+                    "yuanamount" => $before_health_amount,
+                    "houamount" => $member->health_amount,
+                    "ip" => $request->ip(),
+                ];
+                \App\Moneylog::AddLog($log);
+                //可申请健康金调额
+                $apply_amount_rate = 20;
+                $apply_amount = $money*$apply_amount_rate;
+                $before_apply_amount = $member->apply_amount;
+                $member->increment('apply_amount', $apply_amount);
+                $log = [
+                    "userid" => $member->id,
+                    "username" => $member->username,
+                    "money" => $apply_amount,
+                    "notice" => '签到可调额度上升',
+                    "type" => "可调额度",
+                    "status" => "+",
+                    "yuanamount" => $before_apply_amount,
+                    "houamount" => $member->apply_amount,
+                    "ip" => $request->ip(),
+                ];
+                \App\Moneylog::AddLog($log);
+                //可提现健康金
+                $ktx_health_money = $money*$health_rate/100;
+                if($ktx_health_money > 0){
+                    $before_health_ktx_amount= $member->health_ktx_amount;
+                    $member->increment('health_ktx_amount', $ktx_health_money);
+                    $log = [
+                        "userid" => $member->id,
+                        "username" => $member->username,
+                        "money" => $ktx_health_money,
+                        "notice" => '签到奖励(健康金余额)',
+                        "type" => "每日签到",
+                        "status" => "+",
+                        "yuanamount" => $before_health_ktx_amount,
+                        "houamount" => $member->health_ktx_amount,
+                        "ip" => $request->ip(),
+                    ];
+                    \App\Moneylog::AddLog($log);
                 }
                 //判断是否连续签到
-                if ($EditMember->nextqiandao == Carbon::today()->toDateString()) { //是否连续签到
-
-                    $newqd_count = $EditMember->qd_count + 1; //连续签到+1
-                    $lx_qd = $EditMember->lx_qd + 1; //连续签到+1
-
+                if ($member->nextqiandao == Carbon::today()->toDateString()) { //是否连续签到
+                    $newqd_count = $member->qd_count + 1; //连续签到+1
+                    $lx_qd = $member->lx_qd + 1; //连续签到+1
                 } else {  //断签重置
                     $newqd_count = 1; //断签,重置签到第一天
                     $lx_qd = 1;
-
                 }
-
-                //////////////////////////////////////////////////
-                $data = [
-                    "qd_count" => $newqd_count,
-                    "lx_qd" => $lx_qd,
-                    "lastqiandao" => Carbon::now(),
-                    "nextqiandao" => Carbon::tomorrow()->toDateString(),  //第二天签到时间
-                ];
-
-
-                $res = DB::table("member")->where(['id' => $UserId])->update($data);
-
-                if ($res) {
-                    $signin_data = DB::table("signinlist")->select('id', 'num', 'type', 'detail')->where("id", $newqd_count)->first();
-                    $msg_str = $signin_data->detail;
-                }
-                if ($signin_data->type == 2) {
-                    $yuan = $Member->amount;
-                    $Member->increment('amount', (int)$signin_data->num);
-                    $huo = $Member->amount;
-                    $log = [
-                        "userid" => $UserId,
-                        "username" => $Member->username,
-                        "money" => $signin_data->num,
-                        "notice" => $msg_str,
-                        "type" => "每日签到",
-                        "status" => "+",
-                        "yuanamount" => $yuan,
-                        "houamount" => $huo,
-                        "ip" => \Request::getClientIp(),
-                    ];
-
-                    \App\Moneylog::AddLog($log);
-                } else {
-                    $yuan = $Member->amount;
-                    $Member->increment('score', (int)$signin_data->num);
-                    $huo = $Member->amount;
-                    $log = [
-                        "userid" => $UserId,
-                        "username" => $Member->username,
-                        "money" => $signin_data->num,
-                        "notice" => $msg_str,
-                        "type" => "每日签到",
-                        "status" => "+",
-                        "yuanamount" => $yuan,
-                        "houamount" => $huo,
-                        "ip" => \Request::getClientIp(),
-                    ];
-
-                    \App\Moneylog::AddLog($log);
-                }
-
-
-                return response()->json(["status" => 1, "msg" => $msg_str]);
-
-            } else {
-                $newqd_count = 1; //七天后重置到第一天
-                if (Carbon::now()->toDateString() == $EditMember->nextqiandao) {
-                    $lx_qd = $EditMember->lx_qd + 1; //连续签到+1
-                } else {
-                    $lx_qd = 1;
-                }
-
-                $data = [
-                    "qd_count" => $newqd_count,
-                    "lx_qd" => $lx_qd,
-                    "lastqiandao" => Carbon::now(),
-                    "nextqiandao" => Carbon::tomorrow()->toDateString(),  //第二天签到时间
-                ];
-                $res = DB::table("member")->where(['id' => $UserId])->update($data);
-
-                if ($res) {
-                    $signin_data = DB::table("signinlist")->select('id', 'num', 'type', 'detail')->where("id", $newqd_count)->first();
-                    $msg_str = $signin_data->detail;
-                }
-                if ($signin_data->type == 2) {
-                    $yuan = $Member->amount;
-                    $Member->increment('amount', (int)$signin_data->num);
-                    $huo = $Member->amount;
-
-                    $log = [
-                        "userid" => $UserId,
-                        "username" => $Member->username,
-                        "money" => $signin_data->num,
-                        "notice" => $msg_str,
-                        "type" => "每日签到",
-                        "status" => "+",
-                        "yuanamount" => $yuan,
-                        "houamount" => $huo,
-                        "ip" => \Request::getClientIp(),
-                    ];
-
-                    \App\Moneylog::AddLog($log);
-                } else {
-                    $yuan = $Member->amount;
-                    $Member->increment('score', (int)$signin_data->num);
-                    $huo = $Member->amount;
-
-                    $log = [
-                        "userid" => $UserId,
-                        "username" => $Member->username,
-                        "money" => $signin_data->num,
-                        "notice" => $msg_str,
-                        "type" => "每日签到",
-                        "status" => "+",
-                        "yuanamount" => $yuan,
-                        "houamount" => $huo,
-                        "ip" => \Request::getClientIp(),
-                    ];
-
-                    \App\Moneylog::AddLog($log);
-                }
-
-
+                $member->qd_count = $newqd_count;
+                $member->lastqiandao = Carbon::now();
+                $member->nextqiandao = Carbon::tomorrow()->toDateString();  //第二天签到时间
+                $member->save();
             }
-
-            return ["status" => 0, "msg" => '活动已结束'];
-
-
+            return response()->json(["status" => 1, "msg" => '领取成功']);
         }
-
-
+        return response()->json(["status" => 0, "msg" => '领取活动未开启']);
     }
-
 
     public function xj_qiandao(Request $request)
     {
-
         $UserId = $request->session()->get('UserId');
         $EditMember = DB::table("member")->where("id", $UserId)->first();
         $Member = Member::find($UserId);
         $lx_qdset = DB::table("setings")->where('keyname', 'lx_qd')->value('value');
 
         if ($EditMember) {
-            $glevelinfo = DB::table("membergrouplevel")->find($Member->glevel);
-
             if ($EditMember->qd_count != 7) {
-
                 if ($EditMember->lastqiandao >= Carbon::today()->toDateTimeString()) {
                     return response()->json(["status" => 0, "msg" => '今日已经签到过了']);
                 }
-                /* if(!empty($glevelinfo)){
-                        $huo11 = $Member->amount;
-                        $Member->increment('amount',(int)$glevelinfo->sign_coin);
-
-                        $log=[
-                            "userid"=>$UserId,
-                            "username"=>$Member->username,
-                            "money"=>$glevelinfo->sign_coin,
-                            "notice"=>$glevelinfo->name."团队等级签到",
-                            "type"=>"团队每日签到",
-                            "status"=>"+",
-                            "yuanamount"=>$huo11,
-                            "houamount"=>$Member->amount,
-                            "ip"=>\Request::getClientIp(),
-                        ];
-
-                        \App\Moneylog::AddLog($log);
-                    }*/
-                //判断是否连续签到
-                /*if($EditMember->nextqiandao == Carbon::today()->toDateString()){ //是否连续签到
-
-                        $newqd_count = $EditMember->qd_count + 1; //连续签到+1
-
-                    }else{  //断签重置
-                        $newqd_count = 1; //断签,重置签到第一天
-
-                    }*/
                 //判断是否连续签到
                 if ($EditMember->nextqiandao == Carbon::today()->toDateString()) { //是否连续签到
-
                     $newqd_count = $EditMember->qd_count + 1; //连续签到+1
                     $lx_qd = $EditMember->lx_qd + 1; //连续签到+1
-
                 } else {  //断签重置
                     $newqd_count = 1; //断签,重置签到第一天
                     $lx_qd = 1;
-
                 }
-
                 $data = [
                     "qd_count" => $newqd_count,
                     "lx_qd" => $lx_qd,
                     "lastqiandao" => Carbon::now(),
                     "nextqiandao" => Carbon::tomorrow()->toDateString(),  //第二天签到时间
                 ];
-
                 $res = DB::table("member")->where(['id' => $UserId])->update($data);
-
                 if ($res) {
                     $signin_data = DB::table("signinlist")->select('id', 'num', 'type', 'detail')->where("id", $newqd_count)->first();
                     $msg_str = $signin_data->detail;
@@ -2672,121 +2327,11 @@ class UserController extends Controller
                 }
                 return response()->json(["status" => 1, "msg" => $msg_str]);
             }
-
-            return ["status" => 0, "msg" => '活动已结束'];
-
-
         }
-
-
     }
-
-    public function newqiandao(Request $request)
-    {
-
-
-        $UserId = $request->session()->get('UserId');
-        $sum = DB::table('member')->where(['top_uid' => $UserId])->count();
-        $sum1 = DB::table('productbuy')->where(['userid' => $UserId, 'reason' => ''])->count();
-        if ($sum > 4 || $sum1 > 0) {
-            $data['id'] = $UserId;
-            $data['qd_count'] = $this->Member->qd_count;
-            // $count = $this->Member->qd_count;
-            // $data['data'] = DB::table("signinlist")->select('id','num')->get();
-            return response()->json(['status' => 1, 'data' => $data]);
-        } else {
-            return response()->json(["status" => 0, "msg" => '未开启签到功能，请邀请5人或购买任何项目开启签到功能']);
-        }
-
-    }
-
-
-    /***会员签到***/
-    public function qiandao(Request $request)
-    {
-
-        // if($this->Member->activation==0){
-        //     return ["status"=>1,"msg"=>"帐号尚未激活,请先充值激活帐号"];
-        // }
-        $UserId = $request->session()->get('UserId');
-        $moneys = Cache::get("qiandao");
-        //$moneys= Cache::get("QianDaoBfb");
-        $content = $notice = "今日已签到";
-
-        $qiandaotime = strtotime($this->Member->lastqiandao);
-        if ($qiandaotime < strtotime(date("Y-m-d", time()))) {
-            //云币
-            $yunbi_info = DB::table('products')->where('title', '云币')->first();
-            $yunbi_id = $yunbi_info->id;
-            //签到赠送的云币
-            $qiandao_yunbi = DB::table('setings')->where(['keyname' => 'qiandao'])->value('value');
-
-
-            $content = $notice = "签到获得" . $qiandao_yunbi . "个云币";
-            //站内消息
-            $msg = [
-                "userid" => $this->Member->id,
-                "username" => $this->Member->username,
-                "title" => "今日签到",
-                "content" => $content,
-                "from_name" => "系统通知",
-                "types" => "每日签到",
-            ];
-            \App\Membermsg::Send($msg);
-
-
-            //   $MOamount=$this->Member->amount;
-
-            $this->Member->lastqiandao = Carbon::now();
-            $this->Member->save();
-
-            $user_currencys_info = DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $yunbi_id])->first();
-            if ($user_currencys_info) {
-
-                $update_currencys['updated_at'] = Carbon::now();
-                DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $yunbi_id])->increment('num', $qiandao_yunbi);
-                DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $yunbi_id])->increment('total_num', $qiandao_yunbi);
-                $yuanamount = $user_currencys_info->num;
-                $houamount = $user_currencys_info->num + $qiandao_yunbi;
-            } else {
-                $currencys['userid'] = $UserId;
-                $currencys['productid'] = $yunbi_id;
-                $currencys['num'] = $qiandao_yunbi;
-                $currencys['total_num'] = $qiandao_yunbi;
-                $currencys['created_at'] = Carbon::now();
-                $currencys['updated_at'] = Carbon::now();
-                $currencys_res = DB::table('membercurrencys')->insert($currencys);
-                $yuanamount = 0;
-                $houamount = $qiandao_yunbi;
-            }
-
-            $log = [
-                "userid" => $UserId,
-                "username" => $this->Member->username,
-                "money" => $qiandao_yunbi,
-                "notice" => $notice,
-                "type" => "每日签到",
-                "status" => "+",
-
-                "yuanamount" => $yuanamount,
-                "houamount" => $houamount,
-                "ip" => \Request::getClientIp(),
-            ];
-
-            \App\Moneylog::AddLog($log);
-            return ["status" => 1, "msg" => '签到成功'];
-        }
-
-        return ["status" => 0, "msg" => '今日已经签到过了'];
-        //return view($this->Template.".user.memberlogs");
-
-
-    }
-
 
     public function QrCodeBg(Request $request)
     {
-
         header("Content-type: image/jpeg");
         $logo = public_path('uploads/' . Cache::get("erweimalogo"));
         $QrCode = QrCode::encoding('UTF-8')->format('png')
@@ -2829,8 +2374,6 @@ class UserController extends Controller
     /***大转盘游戏***/
     public function lotterys(Request $request)
     {
-
-
         if ($request->ajax()) {
             $UserId = $request->session()->get('UserId');
 
@@ -2996,256 +2539,8 @@ class UserController extends Controller
         }
     }
 
-    //云聊添加步骤
-    public function yltjbz(Request $request)
-    {
-        $res['yltjbz1'] = DB::table('setings')->where(['keyname' => 'yltjbz1'])->first();
-        $res['yltjbz2'] = DB::table('setings')->where(['keyname' => 'yltjbz2'])->first();
-        $res['yltjbz3'] = DB::table('setings')->where(['keyname' => 'yltjbz3'])->first();
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => $res]);
-    }
-
-    //云聊管理员ID
-    public function get_ylglyid(Request $request)
-    {
-        $res['ylglyid'] = DB::table('setings')->where(['keyname' => 'ylglyid'])->first();
-        // $res['picImg'] = DB::table('member')->where('id',$res['ylglyid']->id)->value('picImg');
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => $res]);
-    }
-
-    //云商简介
-    public function ysjj()
-    {
-        $res['ysjj'] = DB::table('setings')->where(['keyname' => 'ysjj'])->first();
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => $res]);
-    }
-
-    //云货币互转-我的货币
-    public function ybhz(Request $request)
-    {
-        $UserId = $request->session()->get('UserId');
-        $membercurrencys = DB::table('membercurrencys as m')
-            ->join('products as p', 'p.id', '=', 'm.productid')
-            ->select('m.userid', 'm.productid', 'm.num', 'p.title', 'p.increase', 'p.market_value', 'p.qtje')
-            ->where(['m.userid' => $UserId])
-            ->orderBy('m.created_at', 'desc')
-            ->get();
-        foreach ($membercurrencys as $v) {
-            // $v->sum_market_value = number_format($v->num * $v->market_value, 2);
-            $v->sum_market_value = number_format($v->num * $v->qtje, 2);
-        }
-        $fee = DB::table('setings')->where('keyname', 'yunbi_fee')->value('value');//云币手续费
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => ['list' => $membercurrencys, 'fee' => $fee]]);
-    }
-
-    //货币-收款列表
-    public function collection_list(Request $request)
-    {
-        $UserId = $request->session()->get('UserId');
-        // $membercurrencys = DB::table('products as p')
-        //     ->join('membercurrencys as m', 'p.id', '=', 'm.productid')
-        //     ->select('m.userid','m.productid','m.num','p.title','p.increase','p.market_value','p.qtje')
-        //     ->orwhere(['p.category_id'=>11])
-        //     // ->orderBy('m.created_at','desc')
-        //     ->get();
-
-        $membercurrencys = DB::table('products as p')
-            // ->leftjoin('membercurrencys as m',['p.id'=>'m.productid'] )
-            // ->select('m.userid','m.productid','m.num','p.title','p.increase','p.market_value','p.qtje')
-            ->select('p.id', 'p.title', 'p.increase', 'p.market_value', 'p.qtje')
-            ->where(['p.category_id' => 11])
-            ->get();
-
-        $totalAmount = 0; //总资产
-
-
-        foreach ($membercurrencys as $v) {
-
-            $randstr = $this->get_random_code(20);
-            $rand_arr = explode('O', $randstr);
-
-            $product_num = str_split($v->id, 1);//每个数字
-            $user_num = str_split($UserId, 1);//每个数字
-            $rand = rand(0, 3);
-            foreach ($product_num as $a => $b) {
-                $rand_arr[0] = substr_replace($rand_arr[0], $b, $a + $rand + ($a * 2), 1);
-            }
-
-            foreach ($user_num as $a => $b) {
-                $rand_arr[1] = substr_replace($rand_arr[1], $b, $a + $rand + ($a * 2), 1);
-            }
-            $v->curr_address = $rand_arr[0] . 'O' . $rand_arr[1];   //收币地址  明文版
-            $has_currencys = DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $v->id])->first();
-            if ($has_currencys) {
-                $v->num = $has_currencys->num;
-            } else {
-                $v->num = 0;
-            }
-            // $v->num = $v->num?$v->num:0;
-            $totalAmount += $v->num * $v->qtje;
-        }
-
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => ['list' => $membercurrencys, 'totalAmount' => sprintf("%.2f", $totalAmount)]]);
-    }
-
-    //货币转出
-    public function transfer_out(Request $request)
-    {
-        $UserId = $request->session()->get('UserId');
-
-        if (!isset($request->link) || !isset($request->num) || !isset($request->productid) || !isset($request->fee)) {
-            return response()->json(["status" => 0, "msg" => "参数不能为空"]);
-        }
-        $link = $request->link;//链接
-        $num = $request->num;//数量
-        $link_info = explode('O', $link);
-        $huobi_id = $this->findNum($link_info[0]);//货币id
-        $to_userid = $this->findNum($link_info[1]);//转入人
-
-        $fee_num = DB::table('setings')->where('keyname', 'yunbi_fee')->value('value');//云币手续费
-        $yunbi_info = DB::table('products')->where(['title' => '云币'])->first();//云货币信息
-        $yunbi_id = $yunbi_info->id;
-
-        if ($UserId == $to_userid) {
-            return response()->json(["status" => 0, "msg" => "不可转给自己"]);
-        }
-        if ($request->productid != $huobi_id) {
-            return response()->json(["status" => 0, "msg" => "币种不同,不可互转"]);
-        }
-        if ($request->fee != $fee_num) {
-            return response()->json(["status" => 0, "msg" => "手续费有误"]);
-        }
-        //货币信息
-        $products_info = DB::table('products')->where(['id' => $huobi_id])->first();
-        if (!$products_info) {
-            return response()->json(["status" => 0, "msg" => "货币信息异常"]);
-        }
-        $my_info = DB::table('member')->where(['id' => $UserId, 'state' => 1])->first();
-        if (!$my_info) {
-            return response()->json(["status" => 0, "msg" => "不可转币给此云商户"]);
-        }
-
-        //我是否有该货币
-        $currencys_info = DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $huobi_id])->orderBy('created_at', 'desc')->first();
-        if (!$currencys_info) {
-            return response()->json(["status" => 0, "msg" => "您没有该货币信息"]);
-        }
-        if ($currencys_info->num < $num || $num < 0) {
-            return response()->json(["status" => 0, "msg" => "您货币个数不足"]);
-        }
-        //我的云币信息
-        $yunbi_currencys_info = DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $yunbi_id])->orderBy('created_at', 'desc')->first();
-        if (!$yunbi_currencys_info) {
-            return response()->json(["status" => 0, "msg" => "您还没有云币，请先去购买"]);
-        }
-        if ($yunbi_currencys_info->num < $fee_num) {
-            return response()->json(["status" => 0, "msg" => "交易需要手续费" . $fee_num . "个云币，您云币个数不足，请先购买"]);
-        }
-        //如果是云币转币
-        if ($huobi_id == $yunbi_id && $yunbi_currencys_info->num < ($fee_num + $num)) {
-            return response()->json(["status" => 0, "msg" => "交易需要手续费" . $fee_num . "个云币，您云币个数不足，请先购买"]);
-        }
-
-
-        $yuanamount = $yunbi_currencys_info->num;
-        //转入人信息
-        $to_userid_info = DB::table('member')->where(['id' => $to_userid, 'state' => 1])->first();
-        if (!$to_userid_info) {
-            return response()->json(["status" => 0, "msg" => "转入人信息错误"]);
-        }
-
-        //我的货币
-        DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $huobi_id])->decrement('num', $num);
-        DB::table('membercurrencys')->where(['userid' => $UserId, 'productid' => $yunbi_id])->decrement('num', $fee_num);
-        $yunbi_houamount = $yuanamount - $fee_num;
-        $huobi_houamount = $currencys_info->num - $num;
-        //转入人
-        $to_userid_huobi_info = DB::table('membercurrencys')->where(['userid' => $to_userid, 'productid' => $huobi_id])->first();
-
-        if ($to_userid_huobi_info) {
-            DB::table('membercurrencys')->where(['userid' => $to_userid, 'productid' => $huobi_id])->increment('num', $num);
-            DB::table('membercurrencys')->where(['userid' => $to_userid, 'productid' => $huobi_id])->increment('total_num', $num);
-            $to_userid_huobi_yuanamount = $to_userid_huobi_info->num;
-            $to_userid_huobi_houamount = $to_userid_huobi_info->num + $num;
-        } else {
-            $membercurrencys['userid'] = $to_userid;
-            $membercurrencys['productid'] = $huobi_id;
-            $membercurrencys['num'] = $num;
-            $membercurrencys['total_num'] = $num;
-            $membercurrencys['created_at'] = $membercurrencys['updated_at'] = Carbon::now();
-            DB::table('membercurrencys')->insert($membercurrencys);
-            $to_userid_huobi_yuanamount = $num;
-            $to_userid_huobi_houamount = $num;
-        }
-
-        //转出 - log表
-        $from_currencyslog['order'] = time();
-        $from_currencyslog['from_userid'] = $UserId;
-        $from_currencyslog['to_userid'] = $to_userid;
-        $from_currencyslog['productid'] = $huobi_id;
-        $from_currencyslog['num'] = $num;
-        $from_currencyslog['fee'] = $fee_num;
-        $from_currencyslog['price'] = $products_info->qtje;
-        $from_currencyslog['fee_price'] = $yunbi_info->qtje;//当时云币价格
-        $from_currencyslog['created_at'] = $currencyslog['updated_at'] = Carbon::now();
-        $currlog_id = DB::table('currencyslog')->insertGetId($from_currencyslog);
-        //货币转出log
-        $zhuanchu_log = [
-            "userid" => $UserId,
-            "username" => $my_info->username,
-            "money" => $num,
-            "notice" => '货币转出',
-            "type" => "货币转出",
-            "status" => "-",
-            "yuanamount" => $currencys_info->num,
-            "houamount" => $huobi_houamount,
-            "ip" => \Request::getClientIp(),
-            "currlog_id" => $currlog_id,
-            "product_id" => $huobi_id,
-        ];
-        \App\Moneylog::AddLog($zhuanchu_log);
-
-        //手续费log
-        $fee_log = [
-            "userid" => $UserId,
-            "username" => $my_info->username,
-            "money" => $fee_num,
-            "notice" => '云币转出手续费',
-            "type" => "手续费",
-            "status" => "-",
-            "yuanamount" => $yuanamount,
-            "houamount" => $yunbi_houamount,
-            "ip" => \Request::getClientIp(),
-            "currlog_id" => $currlog_id,
-            "product_id" => $yunbi_id,
-        ];
-        \App\Moneylog::AddLog($fee_log);
-
-        //货币转入log
-        $zhuanru_log = [
-            "userid" => $to_userid,
-            "username" => $to_userid_info->username,
-            "money" => $num,
-            "notice" => '货币转入',
-            "type" => "货币转入",
-            "status" => "+",
-            "yuanamount" => $to_userid_huobi_yuanamount,
-            "houamount" => $to_userid_huobi_houamount,
-            "ip" => \Request::getClientIp(),
-            "currlog_id" => $currlog_id,
-            "product_id" => $huobi_id,
-        ];
-        \App\Moneylog::AddLog($zhuanru_log);
-
-        return response()->json(["status" => 1, "msg" => "转出成功"]);
-    }
-
-
     function get_random_code($num)
     {
-        // $codeSeeds = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
-        // $codeSeeds .= "abcdefghijklmnpqrstuvwxyz";
-        // $codeSeeds .= "0123456789_";
         $codeSeeds = "1234567890";
         $len = strlen($codeSeeds);
         $ban_num = ($num / 2) - 3;
@@ -3368,8 +2663,6 @@ class UserController extends Controller
     public function my_collection_code(Request $request)
     {
         $UserId = $request->session()->get('UserId');
-        $ret = '';
-//        $userid = isset($_POST['userid']) ? intval($_POST['userid']) : 0;
         if ($UserId) {
             $filename = '/upload/qrcode/' . $UserId . '.jpg';
             if (!file_exists($filename)) {
@@ -3378,31 +2671,9 @@ class UserController extends Controller
                 $qrCode->setWriterByName('png');
                 $qrCode->setEncoding('UTF-8');
                 $qrCode->writeFile(ltrim($filename, '/'));
-//                $token = getToken();
-//                $body = '{"action_name":"QR_LIMIT_STR_SCENE","action_info":{"scene":{"scene_str":"'. $userid . '"}}}';
-//                $url = 'https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token='.$token;
-//                $res = curl($url,$body);
-//                $res = json_decode($res,true);
-//                $ticket = $res['ticket'];
-//                $url = $res['url'];
-//                $qrCode = new QrCode($url);
-//                $qrCode->setSize(300);
-//                $qrCode->setWriterByName('png');
-//                $qrCode->setEncoding('UTF-8');
-//                $qrCode->writeFile(ltrim($filename, '/'));
             }
             return ENV('FILE_URL') . $filename;
         }
-    }
-
-    //获取馈赠股权信息
-    public function getGiftEquity()
-    {
-        $data['gift_equity_lv1'] = DB::table('setings')->where(['keyname' => 'gift_equity_lv1'])->first();
-        $data['gift_equity_lv2'] = DB::table('setings')->where(['keyname' => 'gift_equity_lv2'])->first();
-        $data['gift_equity_lv3'] = DB::table('setings')->where(['keyname' => 'gift_equity_lv3'])->first();
-
-        return response()->json(["status" => 1, "msg" => "返回成功", "data" => $data]);
     }
 
     //我的购买记录
@@ -3474,8 +2745,6 @@ class UserController extends Controller
             ->whereIn('id', $user_id_arr)
             ->groupBy('ttop_uid')
             ->get()->toArray();
-        // dump($level_one);
-        // dump($level_two);
         //将二级的数组重组用uid做键值
         $new_level_two = [];
         foreach ($level_two as $k => $v) {

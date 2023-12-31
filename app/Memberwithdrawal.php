@@ -26,7 +26,7 @@ class Memberwithdrawal extends Model
     protected $dates = ['created_at', 'updated_at'];
 
 
-    protected function AddWithdrawal($userid,$Withdrawalamount,$bankid,$after_amount,$fee,$type){
+    protected function AddWithdrawal($userid,$Withdrawalamount,$bankid,$after_amount,$fee,$type,$withdraw_type){
         DB::beginTransaction();
         try{
             $Member = Member::where('id', '=', $userid)->lockForUpdate()->first();
@@ -34,7 +34,17 @@ class Memberwithdrawal extends Model
 				DB::rollBack();
                 return ["status"=>0,"msg"=>"会员不存在"];
             }
-            if($Member->ktx_amount<$Withdrawalamount){
+            switch ($withdraw_type){
+                case 'balance':
+                    $withdrawField = 'ktx_amount';
+                    break;
+                case 'health':
+                    $withdrawField = 'health_ktx_amount';
+                    break;
+                default:
+                    $withdrawField = 'ktx_amount';
+            }
+            if($Member->$withdrawField<$Withdrawalamount){
                 DB::rollBack();
                 return ["status"=>0,"msg"=>"帐户余额不足"];
             }
@@ -44,20 +54,18 @@ class Memberwithdrawal extends Model
                 return ["status"=>0,"msg"=>"提现账户不存在"];
             }
             $ext = '';
-            $usdt_rate = 0;
-            if($type==3){
-                $usdt_rate = Db::table("setings")->where('keyname','usdt_rate')->value('value');
-                $ext = 'USDT费率'.$usdt_rate.'|到账USDT：'.ceil($after_amount/$usdt_rate);
-            }
-            $amount=  $Member->ktx_amount;
+            $amount=  $Member->$withdrawField;
             $Model = new Memberwithdrawal();
             $Model->amount=$Withdrawalamount;
             $Model->userid=$Member->id;
             $Model->username=$Member->username;
+            $Model->title='提现至'.$type==1?'银行卡':'支付宝('.$this->dataDesensitization($memberbank_info->bankcode,4,10).')';
+            $Model->withdraw_sn= 'TX'.date('YmdHis').$this->get_random_code(6);
             $Model->status='0';
             $Model->ip=\Request::getClientIp();
             $Model->sendsms='0';
             $Model->type=$type;
+            $Model->amount_type=$withdraw_type;
             $Model->ext=$ext;
             $Model->bankid=$bankid;
             $Model->created_at=Carbon::now();
@@ -67,18 +75,11 @@ class Memberwithdrawal extends Model
                 $Model->bankrealname=$memberbank_info->bankrealname;
                 $Model->bankcode=$memberbank_info->bankcode;
             }
-            if($type == 3){
-                $Model->usdt_rate=$usdt_rate;
-                $Model->after_usdt=ceil($after_amount/$usdt_rate);
-                $Model->address=$memberbank_info->address;
-            }
             $Model->after_amount=$after_amount;
             $Model->fee=$fee;
-            $Model->wtype=0;
-
             $Model->save();
-            $Member->decrement('ktx_amount',$Withdrawalamount);
-            if($Member->ktx_amount < 0){
+            $Member->decrement($withdrawField,$Withdrawalamount);
+            if($Member->$withdrawField < 0){
                 DB::rollBack();
                 return ['status'=>0,'msg'=>'提交失败，请重试!'];
             }
@@ -99,16 +100,12 @@ class Memberwithdrawal extends Model
                 "type"=>"提款",
                 "status"=>"-",
                 "yuanamount"=>$amount,
-                "houamount"=>$Member->ktx_amount,
+                "houamount"=>$Member->$withdrawField,
                 "ip"=>\Request::getClientIp(),
                 'bank_id'=>$bankid,
                 'moneylog_type_id'=>'6',
             ];
             \App\Moneylog::AddLog($log);
-            if($Member->ktx_amount < 0){
-                DB::rollBack();
-                return ['status'=>0,'msg'=>'提交失败，请重试!'];
-            }
             //添加后台统计
             DB::table('statistics_sys')->where('id',1)->increment('withdrawal_amount',$Withdrawalamount);
             DB::commit();
@@ -118,6 +115,59 @@ class Memberwithdrawal extends Model
             return ['status'=>0,'msg'=>'提交失败，请重试'];
         }
         return ["status"=>1,"msg"=>"申请成功"];
+    }
+
+    function get_random_code($num)
+    {
+        $codeSeeds = "1234567890";
+        $len = strlen($codeSeeds);
+        $ban_num = ($num / 2) - 3;
+        $code = "";
+        for ($i = 0; $i < $num; $i++) {
+            $rand = rand(0, $len - 1);
+            if ($i == $ban_num) {
+                $code .= 'O';
+            } else {
+                $code .= $codeSeeds[$rand];
+            }
+        }
+        return $code;
+    }
+    /**
+     * 数据脱敏
+     * @param string $string 需要脱敏值
+     * @param int $start 开始
+     * @param int $length 结束
+     * @param string $re 脱敏替代符号
+     * @return bool|string
+     * 例子:
+     * dataDesensitization('18811113683', 3, 4); //188****3683
+     * dataDesensitization('乐杨俊', 0, -1); //**俊
+     */
+    public function dataDesensitization($string, $start = 0, $length = 0, $re = '*')
+    {
+        if (empty($string)){
+            return false;
+        }
+        $strarr = array();
+        $mb_strlen = mb_strlen($string);
+        while ($mb_strlen) {//循环把字符串变为数组
+            $strarr[] = mb_substr($string, 0, 1, 'utf8');
+            $string = mb_substr($string, 1, $mb_strlen, 'utf8');
+            $mb_strlen = mb_strlen($string);
+        }
+        $strlen = count($strarr);
+        $begin = $start >= 0 ? $start : ($strlen - abs($start));
+        $end = $last = $strlen - 1;
+        if ($length > 0) {
+            $end = $begin + $length - 1;
+        } elseif ($length < 0) {
+            $end -= abs($length);
+        }
+        for ($i = $begin; $i <= $end; $i++) {
+            $strarr[$i] = $re;
+        }
+        return implode('', $strarr);
     }
 
 
@@ -132,14 +182,19 @@ class Memberwithdrawal extends Model
             $Model->save();
 
             $Member= Member::find($Model->userid);
-            if($Model->wtype==1){
-                $amountFiled = 'rw_amount';
-            }else{
-                $amountFiled = 'ktx_amount';
+            switch ($Model->amount_type){
+                case 'balance':
+                    $withdrawField = 'ktx_amount';
+                    break;
+                case 'health':
+                    $withdrawField = 'health_ktx_amount';
+                    break;
+                default:
+                    $withdrawField = 'ktx_amount';
             }
-            $amount=  $Member->$amountFiled;
+            $amount=  $Member->$withdrawField;
             // 返还提现金额
-            $Member->increment($amountFiled,$Model->amount);
+            $Member->increment($withdrawField,$Model->amount);
 
             $msg=[
                 "userid"=>$Model->userid,
@@ -169,7 +224,7 @@ class Memberwithdrawal extends Model
                 "type"=>"提款",
                 "status"=>"+",
                 "yuanamount"=>$amount,
-                "houamount"=>$Member->$amountFiled,
+                "houamount"=>$Member->$withdrawField,
                 "ip"=>\Request::getClientIp(),
                 'moneylog_type_id'=>'7',
             ];
@@ -182,21 +237,12 @@ class Memberwithdrawal extends Model
                 DB::rollBack();
                 return ['status'=>0,'msg'=>'提交失败，请重试'];
             }
-
         }
-
-
-
-
         return ["status"=>0,"msg"=>"取消成功"];
-
     }
 
     protected function ConfirmWithdrawal($id){
-
-
         $Model = Memberwithdrawal::find($id);
-
         if($Model->status==0){
              DB::beginTransaction();
             try{
@@ -204,7 +250,17 @@ class Memberwithdrawal extends Model
                 $Model->save();
 
                $Member= Member::find($Model->userid);
-               $amount=  $Member->ktx_amount;
+                switch ($Model->amount_type){
+                    case 'balance':
+                        $withdrawField = 'ktx_amount';
+                        break;
+                    case 'health':
+                        $withdrawField = 'health_ktx_amount';
+                        break;
+                    default:
+                        $withdrawField = 'ktx_amount';
+                }
+               $amount=  $Member->$withdrawField;
                 /*if ($amount < 0) {
 					return ['status'=>0,'msg'=>'操作失败，用户余额小于0，请检查'];
 				}*/

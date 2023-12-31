@@ -26,6 +26,7 @@
                 <col>
                 <col>
                 <col>
+                <col>
             </colgroup>
             <thead>
             <tr>
@@ -40,6 +41,7 @@
                 <th>图标</th>
                 <th>渠道类型</th>
                 <th>说明</th>
+                <th>排序</th>
                 <th>状态</th>
                 <th>操作</th>
             </tr>
@@ -90,7 +92,14 @@
                 <%# }%>
             </td>
             <td><% item.pay_desc %></td>
-            <td><% item.enabled?'启用':'禁用' %></td>
+            <td><% item.sort %></td>
+            <td>
+                <%# if(item.enabled==0){ %>
+                <input type="checkbox"   lay-skin="switch" lay-filter="switchTest-settop" lay-text="启用|禁用" id="<% item.id %>">
+                <%# }else{ %>
+                <input type="checkbox"    checked  lay-skin="switch" lay-filter="switchTest-settop" lay-text="启用|禁用" id="<% item.id %>">
+                <%# } %>
+            </td>
             <td class="td-manage">
                 <a title="编辑"  onclick="update(<% item.id %>,<% d.current_page %>)" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
@@ -106,8 +115,58 @@
         <%#  } %>
     </script>
     <script>
-       layui.use(['form'], function(){
-        var form = layui.form;
+        layui.use('form', function(){
+            var form = layui.form;
+            form.on('switch(switchTest-settop)', function(data){
+                var id=data.elem.id;
+                var top_status= data.elem.checked?1:0;
+                var load;
+                $.ajax({
+                    url: "{{ route($RouteController.'.settop') }}",
+                    type:"post",     //请求类型
+                    data:{
+                        id:id,status:top_status,
+
+                        _token:"{{ csrf_token() }}"
+                    },  //请求的数据
+                    dataType:"json",  //数据类型
+                    beforeSend: function () {
+                        // 禁用按钮防止重复提交，发送前响应
+                        load = layer.load();
+
+                    },
+                    success: function(data){
+                        //laravel返回的数据是不经过这里的
+                        //layer.closeAll();
+                        if(data.status==0){
+
+                            layer.msg(data.msg,{time: "{{Cache::get("msgshowtime")}}"},function(){
+                                layer.closeAll();
+                            });
+
+                        }else{
+                            layer.msg(data.msg,{icon: 5},function(){
+
+                            });
+                        }
+                    },
+                    complete: function () {//完成响应
+                        layer.close(load);
+                    },
+                    error: function(msg) {
+                        var json=JSON.parse(msg.responseText);
+                        var errormsg='';
+                        $.each(json,function(i,v){
+                            errormsg+=' <br/>'+ v.toString();
+                        } );
+                        layer.alert(errormsg);
+
+                    },
+
+                });
+
+            });
+
         });
     </script>
 @endsection

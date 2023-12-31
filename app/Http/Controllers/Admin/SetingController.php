@@ -1,13 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 use App\Seting;
 use Illuminate\Http\Request;
-use Cache;
-use Form;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Image;
 
 class SetingController extends BaseController
 {

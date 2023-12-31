@@ -78,77 +78,7 @@ class Productbuy extends Model
         return $Shja;
     }
 
-
-
-    /***全球分红 全球分红奖励***/
-
-    protected function GlobalBonus($invicode){
-
-
-        $GlobalBonuLadder=Cache::get('GlobalBonuLadder');
-        $userid=  Member::where("invicode",$invicode)->value('id');
-
-          $XiaXians= Member::where("inviter",$invicode)
-              ->whereDate("created_at",Carbon::now()->format("Y-m-d"))
-              ->pluck("id");
-        $Productbuys=  Productbuy::whereIn("userid",$XiaXians)
-            ->whereDate("created_at",Carbon::now()->format("Y-m-d"))
-            ->count();
-
-        $Ladder=intval($Productbuys/$GlobalBonuLadder);
-
-        for($i=1;$i<=$Ladder;$i++){
-            $this->GlobalBonusLogs($userid,$i);
-
-        }
-
+    public function product(){
+        return $this->belongsTo(Product::class,'productid','id');
     }
-
-
-    protected function GlobalBonusLogs($userid,$Ladder){
-
-        $GlobalBonuMoney=Cache::get('GlobalBonuMoney');
-
-
-
-        $notice=  '全球分红('.$Ladder.'阶)';
-
-       $Moneylogs= Moneylog::where("moneylog_userid",$userid)
-            ->where("moneylog_type","全球分红奖励")
-            ->where("moneylog_notice",$notice)
-            ->whereDate("created_at",Carbon::now()->format("Y-m-d"))
-            ->count();
-
-       if($Moneylogs==0) {
-           $BuyMember = Member::find($userid);
-           //站内消息
-           $msg = [
-               "userid" => $BuyMember->id,
-               "username" => $BuyMember->username,
-               "title" => "全球分红奖励",
-               "content" => $notice . '奖励' . $GlobalBonuMoney . '元',
-               "from_name" => "系统通知",
-               "types" => "全球分红奖励",
-           ];
-           \App\Membermsg::Send($msg);
-
-           $Mamount = $BuyMember->amount;
-
-           $BuyMember->increment('amount', $GlobalBonuMoney);
-           $log = [
-               "userid" => $BuyMember->id,
-               "username" => $BuyMember->username,
-               "money" => $GlobalBonuMoney,
-               "notice" => $notice,
-               "type" => "全球分红奖励",
-               "status" => "+",
-               "yuanamount" => $Mamount,
-               "houamount" => $BuyMember->amount,
-               "ip" => \Request::getClientIp(),
-           ];
-
-           \App\Moneylog::AddLog($log);
-       }
-    }
-
 }

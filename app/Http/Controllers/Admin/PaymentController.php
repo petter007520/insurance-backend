@@ -1,12 +1,10 @@
 <?php
-
-
 namespace App\Http\Controllers\Admin;
-    use App\Payment;
-    use DB;
-    use Illuminate\Http\Request;
-    use Session;
-    use Cache;
+use App\Payment;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends BaseController
 {
@@ -55,6 +53,7 @@ class PaymentController extends BaseController
             $Model->bankrealname = $request->input('bankrealname','');
             $Model->pay_type = $request->input('pay_type',0);
             $Model->type = $request->input('type',0);
+            $Model->sort = $request->input('sort',0);
             $Model->save();
             if($request->ajax()){
                 return response()->json([
@@ -86,6 +85,7 @@ class PaymentController extends BaseController
             $Model->bankrealname = $request->input('bankrealname','');
             $Model->pay_type = $request->input('pay_type',0);
             $Model->type = $request->input('type',0);
+            $Model->sort = $request->input('sort',0);
             $Model->save();
             if($request->ajax()){
                 return response()->json([
@@ -119,6 +119,29 @@ class PaymentController extends BaseController
             }
         }else{
             return ["status"=>1,"msg"=>"非法操作"];
+        }
+    }
+
+    public function settop(Request $request)
+    {
+        if($request->isMethod("post")){
+            $payment =  DB::table($this->table)->where(['id' => $request->input("id")])->first();
+            $data['enabled'] = $payment->enabled==1?0:1;
+            $data['updated_at'] = Carbon::now();
+            DB::beginTransaction();
+            try {
+                DB::table($this->table)->where(['id' => $request->input("id")])->update($data);
+                DB::commit();
+            } catch (\Exception $exception) {
+                DB::rollback();
+                return response()->json(['status' => 0, 'msg' => '操作失败']);
+            }
+
+            if($request->ajax()){
+                return response()->json([
+                    "msg"=>"操作成功","status"=>0
+                ]);
+            }
         }
     }
 }

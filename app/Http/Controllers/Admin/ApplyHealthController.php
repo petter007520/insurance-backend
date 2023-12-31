@@ -1,19 +1,17 @@
 <?php
 namespace App\Http\Controllers\Admin;
-use App\Storage;
-use App\TravelLog;
+use App\HealthExpense;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Session;
-use Cache;
-class TravelLogController extends BaseController
+class ApplyHealthController extends BaseController
 {
-    private $table="travellog";
+    private $table="health_expense";
 
     public function __construct(Request $request)
     {
-        \App\Http\Controllers\Admin\BaseController::__construct($request);
-        $this->Model= new TravelLog();
+        BaseController::__construct($request);
+        $this->Model= new HealthExpense();
     }
 
     public function lists(Request $request){
