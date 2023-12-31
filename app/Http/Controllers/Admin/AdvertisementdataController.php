@@ -4,6 +4,7 @@ use App\Advertisement;
 use App\Advertisementdata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class AdvertisementdataController  extends  BaseController
 {
