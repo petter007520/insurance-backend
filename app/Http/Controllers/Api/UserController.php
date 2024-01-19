@@ -851,6 +851,7 @@ class UserController extends Controller
     {
         $UserId = $this->Member->id;
         $pageSize = $request->get('pageSize', 10);
+        $page = $request->get('page', 1);
         $type = $request->post('type','withdraw');
         $time = $request->post('time','day');
         switch ($time) {
@@ -887,7 +888,7 @@ class UserController extends Controller
 //            ->whereBetween('created_at',$time)
                 ->orderBy("created_date", "desc")
                 ->orderBy("id", "desc")
-                ->paginate($pageSize);
+                ->paginate($pageSize,'*','page',$page);
         }
         //先查6~12月的统计数据
         $year = date('Y');
@@ -1755,9 +1756,10 @@ class UserController extends Controller
             $payment_info = DB::table('payment')->where(['id'=>$pay_id])->first(['bankcode','bank_type']);
             //余额支付完成
             if ($pay_type == 1) {
+                $order->pay_type = 1;
+                $order->save();
                 $ret = (new PayOrderController())->third_pay_finish_payment($order->id);
                 if($ret['status'] == 1){
-                    $order->pay_type = 1;
                     $order->status = 2;
                     $order->save();
                 }else{
