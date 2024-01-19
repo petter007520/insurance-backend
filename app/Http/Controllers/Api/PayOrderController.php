@@ -159,7 +159,7 @@ class PayOrderController extends Controller
                             break;
                         }
                         //分成钱数
-                        $rewardMoney = $rateMoney = intval($pro_buy_data->real_amount * $recent->percent / 100);
+                        $rewardMoney = $rateMoney = intval($pro_buy_data->amount * $recent->percent / 100);
                         // 计算本次分成真实金额
 //                        $rewardMoney = self::get_real_amount($ShangjiaMember->id, $rateMoney);
                         if($rateMoney > 0) {
