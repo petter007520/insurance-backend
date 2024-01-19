@@ -289,9 +289,8 @@ class PublicController
             $RegMember->top_three_uid = max($invite_user['top_two_uid'], 0);
             $RegMember->ip = $request->ip();
             $RegMember->reg_from = $platform;
-            $RegMember->amount = $reg_gift_amount > 0 ? $reg_gift_amount : 0;
+            $RegMember->ktx_amount = $reg_gift_amount > 0 ? $reg_gift_amount : 0;
             $RegMember->created_date = $now_date;
-            $RegMember->region = $area;
             $RegMember->save();
 
             if ($invite_user){
