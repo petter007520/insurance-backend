@@ -62,6 +62,14 @@ class CommonController extends Controller
             Cache::forever("index_scroll",$list);
         }
         $data['scroll_notice'] = $list;
+        /*APP下载地址*/
+        if(Cache::has("HotAppDownloadUrl")){
+            $HotAppDownloadUrl = Cache::get("HotAppDownloadUrl");
+        }else{
+            $HotAppDownloadUrl = DB::table("setings")->where('keyname','HotAppDownloadUrl')->value('value');
+            Cache::forever("HotAppDownloadUrl",$HotAppDownloadUrl);
+        }
+        $data['AppDownloadUrl'] = $HotAppDownloadUrl;
         return response()->json(["status"=>1,"msg"=>"返回成功","data"=>$data]);
     }
 
