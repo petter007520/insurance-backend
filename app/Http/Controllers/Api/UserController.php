@@ -1183,6 +1183,66 @@ class UserController extends Controller
         return response()->json(['status' => 1, 'data' => $data]);
     }
 
+    /**
+     * 我的团队
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function team(Request $request){
+        //直推总数
+        $total_invite_list = DB::table('member')->where(['invite_uid'=>$this->Member->id])->get(['id','total_recharge','total_withdraw']);
+        $data['team_child_count'] = $total_invite_list->count();
+        $data['total_recharge'] = 0;
+        $data['total_withdraw'] = 0;
+        $data['total_recharge_count'] = 0;
+        // 一级和二级
+        $team_total = DB::table('member')->where('top_one_uid', $this->Member->id)->orwhere('top_two_uid', $this->Member->id)->get(['id','total_recharge','total_withdraw']);
+        $data['total_count'] = $team_total->count();
+        foreach ($team_total as $val){
+            if($val->total_recharge > 0 ){
+                $data['total_recharge'] += $val->total_recharge;
+                $data['total_recharge_count'] += 1;
+            }
+            if($val->total_withdraw > 0 ){
+                $data['total_withdraw'] += $val->total_withdraw;
+            }
+        }
+        //直推收益
+        $team_ids = $team_total->pluck('id');
+        $data['total_income'] = DB::table('moneylog')->whereIn('moneylog_userid',$team_ids)->where(['moneylog_type'=>'直推返佣'])->sum('moneylog_money');
+        return response()->json(['status' => 1, 'data' => $data]);
+    }
+
+    /**
+     * 直推成员列表
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function teamList(Request $request){
+        $pageSize = $request->get('pageSize', 10);
+        $page = $request->get('page', 1);
+        $level = $request->get('level',1);
+        if(!in_array($level,[1,2])){
+            return response()->json(['status' => 1, 'data' => '']);
+        }
+        $dbMember = Member::select('id', 'nickname', 'username', 'created_date','total_recharge','total_withdraw','is_auth','realname','region','status');
+        if($level==1){
+            $dbMember->where(['top_one_uid'=>$this->Member->id]);
+        }
+        if($level==2){
+            $dbMember->where(['top_two_uid'=>$this->Member->id]);
+        }
+        $list = $dbMember
+            ->paginate($pageSize,'*','page',$page);
+        foreach ($list as $v) {
+            $v->username = substr_replace($v->username, '****', 3, 4);
+            if($v->is_auth == 1){
+                $v->nickname = $v->realname;
+            }
+        }
+        return response()->json(['status' => 1, 'data' => $list]);
+    }
+
     //团队业绩
     public function teamReport(Request $request)
     {
@@ -1190,13 +1250,6 @@ class UserController extends Controller
         $Member = Member::find($UserId);
         $pageSize = $request->get('pageSize', 10);
         $level_type = $request->get('level', 1);
-        $gleveinfo = Db::table('membergrouplevel')->find($Member->glevel);
-        $glevelinfo1 = '普通会员';
-        $grate = 0;
-        if (!empty($gleveinfo)) {
-            $glevelinfo1 = $gleveinfo->name;
-            $grate = $gleveinfo->rate;
-        }
         $where = $level_one = $level_two = $level_three = $level_four = $level_five = [];
         $first_charge_count = $new_user_count = 0;
 
@@ -1280,12 +1333,8 @@ class UserController extends Controller
         $data['teams_count'] = $teams_count;
         $data['new_user_count'] = $new_user_count;
         $data['active_user_count'] = $active_user_count;
-
-
         $data['level_info'] = $level_info;
-        $data['glevelinfo1'] = $glevelinfo1;
         $data['member'] = $member_data;
-        $data['grate'] = $grate;
         return response()->json(['status' => 1, 'data' => $data]);
     }
 

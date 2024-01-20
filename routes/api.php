@@ -146,6 +146,8 @@ Route::middleware('cors')->group(function () {
     /***新接口***/
     Route::any('/user/teamReport', 'Api\UserController@teamReport');//团队业绩
     Route::any('/user/set_myinfo', 'Api\UserController@set_myinfo');//新更新个人资料
+    Route::any('/user/team', 'Api\UserController@team');//我的团队
+    Route::any('/user/teamList', 'Api\UserController@teamList');//直推成员
     Route::any('/index/outer_chain', 'Api\IndexController@outer_chain');//外链地址
     Route::any('/user/getImLink', ['as'=>'user.SendCode','uses'=>'Api\UserController@getImLink']);//客服入口
     Route::any('/equity_reminder', ['as'=>'user.SendCode','uses'=>'Api\MoneyController@equity_reminder']);//客服入口
