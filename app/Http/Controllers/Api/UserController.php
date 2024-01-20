@@ -1225,7 +1225,7 @@ class UserController extends Controller
         if(!in_array($level,[1,2])){
             return response()->json(['status' => 1, 'data' => '']);
         }
-        $dbMember = Member::select('id', 'nickname', 'username', 'created_date','total_recharge','total_withdraw','is_auth','realname','region','status');
+        $dbMember = Member::select('id', 'nickname', 'username', 'created_date','total_recharge','total_withdraw','is_auth','realname','status');
         if($level==1){
             $dbMember->where(['top_one_uid'=>$this->Member->id]);
         }
